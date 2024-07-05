@@ -6,30 +6,30 @@ public class ResourceSpawner : MonoBehaviour
     [SerializeField] private Transform _map;
 
     private int _maxFoodOnMap;
-    private int _maxMarbleOnMap;
     private int _maxTimberOnMap;
+    private int _maxMarbleOnMap;
 
     private float _mapX;
     private float _mapZ;
     private float _spawnDelay;
 
-    private ResourceFood _prefabFood;
-    private ResourceMarble _prefabMarble;
+    private ResourceFood _prefabFood;               // Упростить ресурсы до одного базового, а их тип определять по полю внутри класса?
     private ResourceTimber _prefabTimber;
+    private ResourceMarble _prefabMarble;
 
     private ObjectPool<BaseResource> _poolFood;
-    private ObjectPool<BaseResource> _poolMarble;
     private ObjectPool<BaseResource> _poolTimber;
+    private ObjectPool<BaseResource> _poolMarble;
 
     private void Start()
     {
         _prefabFood = Resources.Load<ResourceFood>("Prefabs/Food");
-        _prefabMarble = Resources.Load<ResourceMarble>("Prefabs/Marble");
         _prefabTimber = Resources.Load<ResourceTimber>("Prefabs/Timber");
+        _prefabMarble = Resources.Load<ResourceMarble>("Prefabs/Marble");
 
         _poolFood = new ObjectPool<BaseResource>(_prefabFood, Create, Enable, Disable);
-        _poolMarble = new ObjectPool<BaseResource>(_prefabMarble, Create, Enable, Disable);
         _poolTimber = new ObjectPool<BaseResource>(_prefabTimber, Create, Enable, Disable);
+        _poolMarble = new ObjectPool<BaseResource>(_prefabMarble, Create, Enable, Disable);
 
 
         _maxFoodOnMap = 3;
@@ -47,8 +47,8 @@ public class ResourceSpawner : MonoBehaviour
     private void OnDisable()
     {
         _poolFood.ReturnAll();
-        _poolMarble.ReturnAll();
         _poolTimber.ReturnAll();
+        _poolMarble.ReturnAll();
 
         StopAllCoroutines();
     }
@@ -94,7 +94,7 @@ public class ResourceSpawner : MonoBehaviour
     {
         // Повторять пока не будет достигнут максимум ресурсов
         yield return StartCoroutine(SpawnResource(_poolFood, _maxFoodOnMap));
-        yield return StartCoroutine(SpawnResource(_poolMarble, _maxMarbleOnMap));
         yield return StartCoroutine(SpawnResource(_poolTimber, _maxTimberOnMap));
+        yield return StartCoroutine(SpawnResource(_poolMarble, _maxMarbleOnMap));
     }
 }
