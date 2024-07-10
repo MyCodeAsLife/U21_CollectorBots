@@ -1,7 +1,11 @@
+using UnityEngine;
 
-public class ResourceFood : BaseResource
+class ResourceFood : BaseResource
 {
-    public ResourceFood() : base(ResourceType.Food)
+    public ResourceFood() : base(ResourceType.Food) { }
+
+    protected override CollectedResource GetCollectedResource()
     {
+        return Resources.Load<CollectedResource>("Prefabs/CollectedFood");
     }
 }

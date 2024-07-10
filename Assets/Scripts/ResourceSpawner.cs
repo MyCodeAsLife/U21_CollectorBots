@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class ResourceSpawner : MonoBehaviour
 {
@@ -17,6 +19,10 @@ public class ResourceSpawner : MonoBehaviour
     private ResourceTimber _prefabTimber;
     private ResourceMarble _prefabMarble;
 
+    //private CollectedResource _prefabCollectedFood;
+    //private CollectedResource _prefabCollectedTimber;
+    //private CollectedResource _prefabCollectedMarble;
+
     private ObjectPool<BaseResource> _poolFood;
     private ObjectPool<BaseResource> _poolTimber;
     private ObjectPool<BaseResource> _poolMarble;
@@ -26,6 +32,10 @@ public class ResourceSpawner : MonoBehaviour
         _prefabFood = Resources.Load<ResourceFood>("Prefabs/Food");
         _prefabTimber = Resources.Load<ResourceTimber>("Prefabs/Timber");
         _prefabMarble = Resources.Load<ResourceMarble>("Prefabs/Marble");
+
+        //_prefabCollectedFood = Resources.Load<CollectedResource>("Prefabs/CollectedFood");
+        //_prefabCollectedTimber = Resources.Load<CollectedResource>("Prefabs/CollectedTimber");
+        //_prefabCollectedMarble = Resources.Load<CollectedResource>("Prefabs/CollectedMarble");
 
         _poolFood = new ObjectPool<BaseResource>(_prefabFood, Create, Enable, Disable);
         _poolTimber = new ObjectPool<BaseResource>(_prefabTimber, Create, Enable, Disable);
@@ -61,16 +71,37 @@ public class ResourceSpawner : MonoBehaviour
         return obj;
     }
 
-    private void Enable(BaseResource obj)     // Переработать
+    private void Enable(BaseResource obj)
     {
         obj.gameObject.SetActive(true);
-        //obj.TimeEnded += OnLifetimeEnded;     // При спавне ресурса, подписатся на его событие "сбора"
+        obj.Harvest += OnResourceHarvest;
     }
 
-    private void Disable(BaseResource obj)    // Переработать
+    private void Disable(BaseResource obj)
     {
-        //obj.TimeEnded -= OnLifetimeEnded;     // При сборе ресурса, отписатся от его события "сбора"
+        obj.Harvest -= OnResourceHarvest;
         obj.gameObject.SetActive(false);
+    }
+
+    private void OnResourceHarvest(BaseResource resource)
+    {
+        switch (resource.ResourceType)
+        {
+            case ResourceType.Food:
+                _poolFood.Return(resource);
+                break;
+
+            case ResourceType.Timber:
+                _poolTimber.Return(resource);
+                break;
+
+            case ResourceType.Marble:
+                _poolMarble.Return(resource);
+                break;
+
+            default:
+                throw new Exception("Unknown resource");
+        }
     }
 
     private IEnumerator SpawnResource(ObjectPool<BaseResource> pool, int count)     // Подписатся на событие ресурса, когда его подбирают чтобы запустить данную корутину

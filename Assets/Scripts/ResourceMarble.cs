@@ -1,7 +1,11 @@
+using UnityEngine;
 
-public class ResourceMarble : BaseResource
+class ResourceMarble : BaseResource
 {
-    public ResourceMarble() : base(ResourceType.Marble)
+    public ResourceMarble() : base(ResourceType.Marble) { }
+
+    protected override CollectedResource GetCollectedResource()
     {
+        return Resources.Load<CollectedResource>("Prefabs/CollectedMarble");
     }
 }

@@ -6,6 +6,8 @@ using UnityEngine;
 public class MainBase : MonoBehaviour
 {
     [SerializeField] private Transform _map;
+
+    private CollectorBot _prefabCollectorBot;
     private ObjectPool<CollectorBot> _poolCollectorBots;
     //private Explosion _prefabExplosion;         // Взять из проекта U20, передовать ссылку на этот эффект в мобов
     private float _scanningRadius;
@@ -13,10 +15,12 @@ public class MainBase : MonoBehaviour
 
     private void Start()    //++
     {
+        _prefabCollectorBot = Resources.Load<CollectorBot>("Prefabs/CollectorBot");
         //_prefabExplosion = Resources.Load<Explosion>("Prefabs/Explosion");      // Взять из проекта U20
         _resources = new List<BaseResource>();
         _scanningRadius = _map.localScale.x > _map.localScale.z ? _map.localScale.x : _map.localScale.z;
-        _scanningRadius *= 5;   // Магическое число
+        _scanningRadius *= 5;   // Магическое число (кол-во unit/2 в одном "кубе" карты.
+        _poolCollectorBots = new ObjectPool<CollectorBot>(_prefabCollectorBot, Create, Enable, Disable);
 
         StartCoroutine(ResourceScanning());
     }
@@ -24,6 +28,26 @@ public class MainBase : MonoBehaviour
     private void OnDisable()
     {
         StopAllCoroutines();
+    }
+
+    private CollectorBot Create(CollectorBot prefab)        // Доработать спавн ресурсов (Общий базовый класс?)
+    {
+        var obj = Instantiate<CollectorBot>(prefab);
+        obj.transform.SetParent(transform);
+
+        return obj;
+    }
+
+    private void Enable(CollectorBot obj)
+    {
+        obj.gameObject.SetActive(true);
+        //obj.Harvest += OnResourceHarvest;
+    }
+
+    private void Disable(CollectorBot obj)
+    {
+        //obj.Harvest -= OnResourceHarvest;
+        obj.gameObject.SetActive(false);
     }
 
     private void GetResources()         // Переименовать(потому как ничего не возвращает) или переместить в корутину ResourceScanning
@@ -54,7 +78,12 @@ public class MainBase : MonoBehaviour
         }
     }
 
-    private void ShowScanningResultInDebug()        // Для тестирования
+    private void StartInitialization()      // 2 пула ботов (занятые и свободные).
+    {
+
+    }
+
+    private void ShowScanningResultInDebug()        // ++++ Для тестирования
     {
         int foodCount = 0;
         int timberCount = 0;
