@@ -45,7 +45,7 @@ public class ResourceSpawner : MonoBehaviour
         _maxFoodOnMap = 3;
         _maxMarbleOnMap = 3;
         _maxTimberOnMap = 5;
-        _spawnDelay = 3f;
+        _spawnDelay = 0f;
 
         _mapX = _map.localScale.x * 4;      // Магическое число
         _mapZ = _map.localScale.z * 4;      // Магическое число
@@ -89,24 +89,31 @@ public class ResourceSpawner : MonoBehaviour
         {
             case ResourceType.Food:
                 _poolFood.Return(resource);
+                int numberOfFood = _maxFoodOnMap - _poolFood.ActiveResourcesCount;
+                StartCoroutine(SpawnResource(_poolFood, numberOfFood));
                 break;
 
             case ResourceType.Timber:
                 _poolTimber.Return(resource);
+                int numberOfTimber = _maxTimberOnMap - _poolTimber.ActiveResourcesCount;
+                StartCoroutine(SpawnResource(_poolTimber, numberOfTimber));
                 break;
 
             case ResourceType.Marble:
                 _poolMarble.Return(resource);
+                int numberOfMarble = _maxMarbleOnMap - _poolMarble.ActiveResourcesCount;
+                StartCoroutine(SpawnResource(_poolMarble, numberOfMarble));
                 break;
 
             default:
                 throw new Exception("Unknown resource");
         }
+
     }
 
-    private IEnumerator SpawnResource(ObjectPool<BaseResource> pool, int count)     // Подписатся на событие ресурса, когда его подбирают чтобы запустить данную корутину
+    private IEnumerator SpawnResource(ObjectPool<BaseResource> pool, int numberOfResource)     // Подписатся на событие ресурса, когда его подбирают чтобы запустить данную корутину
     {
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < numberOfResource; i++)
         {
             yield return new WaitForSeconds(_spawnDelay);
 
@@ -127,5 +134,6 @@ public class ResourceSpawner : MonoBehaviour
         yield return StartCoroutine(SpawnResource(_poolFood, _maxFoodOnMap));
         yield return StartCoroutine(SpawnResource(_poolTimber, _maxTimberOnMap));
         yield return StartCoroutine(SpawnResource(_poolMarble, _maxMarbleOnMap));
+        _spawnDelay = 3f;
     }
 }

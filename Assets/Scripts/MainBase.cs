@@ -6,23 +6,31 @@ using UnityEngine;
 public class MainBase : MonoBehaviour
 {
     [SerializeField] private Transform _map;
+    [SerializeField] private Transform _gatheringPoint;
 
     private CollectorBot _prefabCollectorBot;
-    private ObjectPool<CollectorBot> _poolCollectorBots;
-    //private Explosion _prefabExplosion;         // Взять из проекта U20, передовать ссылку на этот эффект в мобов
+    private ObjectPool<CollectorBot> _poolCollectorBots;            // Выделить в отдельный спавнер, который будет работать со всеми базами
+    //private Explosion _prefabExplosion;                           // Взять из проекта U20, передовать ссылку на этот эффект в мобов
     private float _scanningRadius;
+    private int _maxCountCollectorBots;
     private List<BaseResource> _resources;
+    private IList<CollectorBot> _poolOfWorkingCollectorBots;
+    private IList<CollectorBot> _poolOfIdleCollectorBots;
 
     private void Start()    //++
     {
+        _maxCountCollectorBots = 3;
         _prefabCollectorBot = Resources.Load<CollectorBot>("Prefabs/CollectorBot");
         //_prefabExplosion = Resources.Load<Explosion>("Prefabs/Explosion");      // Взять из проекта U20
         _resources = new List<BaseResource>();
         _scanningRadius = _map.localScale.x > _map.localScale.z ? _map.localScale.x : _map.localScale.z;
         _scanningRadius *= 5;   // Магическое число (кол-во unit/2 в одном "кубе" карты.
         _poolCollectorBots = new ObjectPool<CollectorBot>(_prefabCollectorBot, Create, Enable, Disable);
+        _poolOfWorkingCollectorBots = new List<CollectorBot>();
+        _poolOfIdleCollectorBots = new List<CollectorBot>();
 
         StartCoroutine(ResourceScanning());
+        StartCoroutine(StartInitialization());
     }
 
     private void OnDisable()
@@ -38,16 +46,22 @@ public class MainBase : MonoBehaviour
         return obj;
     }
 
-    private void Enable(CollectorBot obj)
+    private void Enable(CollectorBot bot)
     {
-        obj.gameObject.SetActive(true);
-        //obj.Harvest += OnResourceHarvest;
+        bot.gameObject.SetActive(true);
+        bot.TaskCompleted += OnTaskCompleted;
     }
 
-    private void Disable(CollectorBot obj)
+    private void OnTaskCompleted(CollectorBot bot)
     {
-        //obj.Harvest -= OnResourceHarvest;
-        obj.gameObject.SetActive(false);
+        _poolOfWorkingCollectorBots.Remove(bot);
+        _poolOfIdleCollectorBots.Add(bot);
+    }
+
+    private void Disable(CollectorBot bot)
+    {
+        bot.TaskCompleted -= OnTaskCompleted;
+        bot.gameObject.SetActive(false);
     }
 
     private void GetResources()         // Переименовать(потому как ничего не возвращает) или переместить в корутину ResourceScanning
@@ -78,9 +92,20 @@ public class MainBase : MonoBehaviour
         }
     }
 
-    private void StartInitialization()      // 2 пула ботов (занятые и свободные).
+    private IEnumerator StartInitialization()      // 2 пула ботов (занятые и свободные).
     {
+        var delay = new WaitForSeconds(1f);
 
+        for (int i = 0; i < _maxCountCollectorBots; i++)
+        {
+            yield return delay;
+            var collectorBot = _poolCollectorBots.Get();
+            collectorBot.transform.position = transform.position;
+            collectorBot.gameObject.SetActive(true);
+            collectorBot.GoTo(_gatheringPoint.position);
+
+            _poolOfWorkingCollectorBots.Add(collectorBot);
+        }
     }
 
     private void ShowScanningResultInDebug()        // ++++ Для тестирования

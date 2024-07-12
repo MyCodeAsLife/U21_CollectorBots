@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-abstract class BaseResource : MonoBehaviour
+public abstract class BaseResource : MonoBehaviour
 {
     // ссылка на статус бар сбора
     [SerializeField] private Slider _progressBar;
