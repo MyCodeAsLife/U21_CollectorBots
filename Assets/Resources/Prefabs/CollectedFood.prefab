@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3874599603909447255}
-  - component: {fileID: 7462350771821287572}
+  - component: {fileID: 5092756014180744717}
   m_Layer: 0
   m_Name: CollectedFood
   m_TagString: Untagged
@@ -33,7 +33,7 @@ Transform:
   - {fileID: 5665906673856295276}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7462350771821287572
+--- !u!114 &5092756014180744717
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,7 +42,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7527651167872401729}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ac3bb8426459d049a89d5cfa52a062b, type: 3}
+  m_Script: {fileID: 11500000, guid: 10c50f915bd753843831643ba6ed8cde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &8751017958127769297

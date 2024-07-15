@@ -407,7 +407,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 748661667}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: GatheringPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -441,7 +441,7 @@ GameObject:
   - component: {fileID: 812217415}
   - component: {fileID: 812217414}
   - component: {fileID: 812217413}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: CubeStructure2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -621,8 +621,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.04376556, y: 0.92663103, z: -0.35549048, w: -0.11430672}
-  m_LocalPosition: {x: 5.865009, y: 14.970369, z: 15.222537}
+  m_LocalRotation: {x: -0.048923045, y: 0.91714954, z: -0.37731695, w: -0.118639044}
+  m_LocalPosition: {x: 10.690622, y: 36.904507, z: 46.775494}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -645,7 +645,7 @@ GameObject:
   - component: {fileID: 1349209280}
   - component: {fileID: 1349209279}
   - component: {fileID: 1349209278}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: CentralBuilding
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -752,7 +752,7 @@ GameObject:
   - component: {fileID: 1392980251}
   - component: {fileID: 1392980250}
   - component: {fileID: 1392980249}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: CubeStructure1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -890,7 +890,7 @@ GameObject:
   - component: {fileID: 1493401970}
   - component: {fileID: 1493401969}
   - component: {fileID: 1493401968}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: CylinderStructure2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -987,6 +987,17 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1493401966}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1573227586 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6869505434021395329, guid: 3579d5a7b19375a48808cc40171ea97e, type: 3}
+  m_PrefabInstance: {fileID: 8034532750002604931}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 879c9e63558dc114194aac1920d8296f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &1774240837 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2069672524921426945, guid: 5e304a2666ad94648a03eb4ec4eb9a95, type: 3}
@@ -1230,7 +1241,7 @@ GameObject:
   - component: {fileID: 2125045779}
   - component: {fileID: 2125045778}
   - component: {fileID: 2125045777}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: CylinderStructure1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1695,6 +1706,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1921979344}
     m_Modifications:
+    - target: {fileID: 1627879799810461436, guid: 5725558fa4d206e43928547f67c31c10, type: 3}
+      propertyPath: _resource
+      value: 
+      objectReference: {fileID: 1573227586}
     - target: {fileID: 3905635854662736845, guid: 5725558fa4d206e43928547f67c31c10, type: 3}
       propertyPath: m_LocalPosition.x
       value: 30.94

@@ -330,7 +330,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3040394874500160542}
-  - component: {fileID: 4261591578313051055}
+  - component: {fileID: 3659865931161471395}
   m_Layer: 0
   m_Name: CollectedMarble
   m_TagString: Untagged
@@ -356,7 +356,7 @@ Transform:
   - {fileID: 8173635105429210732}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4261591578313051055
+--- !u!114 &3659865931161471395
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -365,6 +365,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 7950364566688089078}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ac3bb8426459d049a89d5cfa52a062b, type: 3}
+  m_Script: {fileID: 11500000, guid: e117be973c3d13943825aa81ae644d75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

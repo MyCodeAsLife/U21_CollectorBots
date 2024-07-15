@@ -4,71 +4,71 @@ using UnityEngine;
 
 public class CollectorBot : MonoBehaviour
 {
-    //[SerializeField] private Vector3 _targetPoint;            //++
-    [SerializeField] private BaseResource _resource;              // Задается базой, при отправке на сбор
-    [SerializeField] private float _speed;                      //++
-    [SerializeField] private Transform _resourceAttachmentPoint;
-    //private Transform _target;              // Задается базой, при отправке на сбор
+    [SerializeField] private Transform _resourceAttachmentPoint;    // Место "крепления" на сборщике, собранного ресурса
+
+    [SerializeField] private BaseResource _resource;                // Задается базой, при отправке на сбор
+    [SerializeField] private float _speed;
+
+    private CollectedResource _collectedResource;                   // Собранный ресурс, его визуально отображение
+    private MainBase _base;
+    private Vector3 _targetPoint;
+    private bool _isWork;
 
     private Coroutine _moving;
-
-    private CollectedResource _collectedResource;
-
     public event Action<CollectorBot> TaskCompleted;
 
     private void Start()
     {
-        //_targetPoint = new Vector3(4f, 1f, 6f);
         _speed = 7f;
-        //_moving = StartCoroutine(Moving());                     // ++++
+        _isWork = false;
+        _resource = null;
     }
-
-    //private void Update()
-    //{
-    //    //Move();
-    //}
 
     private float GetDistanceToTarget(Vector3 target) => Vector3.Distance(transform.position, target);
 
     public void GoTo(Vector3 point)        // SetMovementPoint
     {
-        //_targetPoint = point;
-        //if (_moving != null)                // Переделать на проверку по занятости, добавить маркер занятости ???
-        //    StopCoroutine(_moving);
+        if (_isWork)
+            _resource = null;
 
-        _moving = StartCoroutine(Moving(point));
-        // Запуск корутины на движение?
-
-        //По приходу к цели, запускать сбор ресурса
-
+        //Debug.Log(point);            // ----------
+        _targetPoint = point;
+        _moving = StartCoroutine(Moving());
     }
 
-    public void SetResourseToCollect(BaseResource resource)
+    public void SetCollectionTask(BaseResource resource)
     {
         _resource = resource;
-        //_targetPoint = resource.transform.position;
-        GoTo(resource.transform.position);         // ???
+        _isWork = true;
+        _targetPoint = resource.transform.position;
+        _moving = StartCoroutine(Moving());
     }
 
     public void SetCollectedResource(CollectedResource resource)
     {
         _collectedResource = Instantiate<CollectedResource>(resource, _resourceAttachmentPoint.transform.position, Quaternion.identity, transform);
         _collectedResource.gameObject.SetActive(true);
+        GoTo(_base.transform.position);
     }
 
-    private void Move(Vector3 targetPosition)
+    public void SetBaseAffiliation(MainBase mainBase)
     {
-        transform.LookAt(targetPosition);
-        transform.position = Vector3.MoveTowards(transform.position, targetPosition, _speed * Time.deltaTime);        // Хороший вариант
+        _base = mainBase;
     }
+
+    //private void Move(Vector3 targetPosition)       // Перенести в Moving
+    //{
+    //    transform.LookAt(targetPosition);
+    //    transform.position = Vector3.MoveTowards(transform.position, targetPosition, _speed * Time.deltaTime);        // Хороший вариант
+    //}
 
     private void OnTriggerEnter(Collider other)
     {
-        //float distanceToTarget = Vector3.Distance(transform.position, other.transform.position);
+        float distanceToTarget = GetDistanceToTarget(_targetPoint);
 
-        if (GetDistanceToTarget(other.transform.position) < 3 && other.TryGetComponent<BaseResource>(out var resource))   // Магическое число
+        if (_resource != null && /*distanceToTarget < 4 &&*/ other.TryGetComponent<BaseResource>(out var resource))   // Магическое число
         {
-            if (resource.ResourceType == _resource.ResourceType)
+            if (resource == _resource)            // Сравнивать ресурс
             {
                 if (_moving != null)
                 {
@@ -78,37 +78,35 @@ public class CollectorBot : MonoBehaviour
                 }
             }
         }
+        else if (/*distanceToTarget < 4 &&*/ other.TryGetComponent<MainBase>(out var mainBase) && _collectedResource != null)   // Магическое число
+        {
+            if (mainBase == _base)
+            {
+                StopCoroutine(_moving);
+                // Передать базе ресурс
+                _base.SetResource(_collectedResource.Type);
+                //Debug.Log(_collectedResource.Type);                 //-----
+                Destroy(_collectedResource.gameObject);
+                _collectedResource = null;
+                TaskCompleted?.Invoke(this);
+            }
+        }
     }
 
-    //private void OnCollisionEnter(Collision other)
-    //{
-    //    float distanceToTarget = Vector3.Distance(transform.position, other.transform.position);        // Высчитывать только если столкнулся с ресурсом
-
-    //    Debug.Log("Object name: " + other.gameObject.name);
-
-    //    if (/*distanceToTarget < 2*/ other.gameObject.tag == "Resource")   // Магическое число и слово
-    //    {
-    //        Debug.Log("Distance to resource: " + distanceToTarget);                                     // +++++
-    //        //if (resource.ResourceType == _target.ResourceType)
-    //        //{
-    //        //    StopCoroutine(Moving());
-    //        //    resource.TryStartHarvest(this);         // Вставить словие, на проверку возможности сбора ресурса
-    //        //}
-    //    }
-    //}
-
-    private IEnumerator Moving(Vector3 target)
+    private IEnumerator Moving()
     {
-        bool isWork = true;
-        target.y = 1;
+        //bool isWork = true;
+        _targetPoint.y = 1;
 
-        while (isWork)
+        while (_isWork)
         {
             yield return null;
-            Move(target);
+            //Move(_targetPoint);
+            transform.LookAt(_targetPoint);
+            transform.position = Vector3.MoveTowards(transform.position, _targetPoint, _speed * Time.deltaTime);        // Хороший вариант
 
-            if (GetDistanceToTarget(target) < 0.1f)
-                isWork = false;
+            if (GetDistanceToTarget(_targetPoint) < 0.1f)
+                _isWork = false;
         }
 
         TaskCompleted?.Invoke(this);
