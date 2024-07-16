@@ -19,6 +19,8 @@ public class MainBase : MonoBehaviour
     private IList<CollectorBot> _poolOfWorkingCollectorBots;
     private IList<CollectorBot> _poolOfIdleCollectorBots;
 
+    //public event Action<CollectorBot> TaskCompleted;
+
     private void Start()    //++
     {
         _maxCountCollectorBots = 3;
@@ -43,7 +45,12 @@ public class MainBase : MonoBehaviour
 
     public void SetResource(ResourceType resourceType)              // +++++++++++++++++++++++++++++++++++
     {
-        
+        for (int i = 0; i < _resourcesPlannedForCollection.Count; ++i)
+            if (_resourcesPlannedForCollection[i].ResourceType == resourceType)
+            {
+                _resourcesPlannedForCollection.RemoveAt(i);
+                break;
+            }
     }
 
     private CollectorBot Create(CollectorBot prefab)        // Доработать спавн ресурсов (Общий базовый класс?)
@@ -57,10 +64,10 @@ public class MainBase : MonoBehaviour
     private void Enable(CollectorBot bot)
     {
         bot.gameObject.SetActive(true);
-        bot.TaskCompleted += OnTaskCompleted;
+        bot.TaskCompleted += OnCollectorBotTaskCompleted;
     }
 
-    private void OnTaskCompleted(CollectorBot bot)
+    public void OnCollectorBotTaskCompleted(CollectorBot bot)
     {
         _poolOfWorkingCollectorBots.Remove(bot);
         _poolOfIdleCollectorBots.Add(bot);
@@ -68,7 +75,7 @@ public class MainBase : MonoBehaviour
 
     private void Disable(CollectorBot bot)
     {
-        bot.TaskCompleted -= OnTaskCompleted;
+        bot.TaskCompleted -= OnCollectorBotTaskCompleted;
         bot.gameObject.SetActive(false);
     }
 
@@ -82,6 +89,8 @@ public class MainBase : MonoBehaviour
                 if (_freeResources.Contains(resource) == false)                             // Проблема при сравнении ресурса           ++++++++
                     if (_resourcesPlannedForCollection.Contains(resource) == false)         // Проблема при сравнении ресурса           ++++++++
                         _freeResources.Add(resource);
+
+        //Debug.Log("Free resources - " + _freeResources.Count + ". Planed recources - " + _resourcesPlannedForCollection.Count);     //--------------
     }
 
     private IEnumerator ResourceScanning()          // Работать постоянно или когда закончатся ресурсы?
@@ -92,9 +101,8 @@ public class MainBase : MonoBehaviour
         while (isWork)
         {
             yield return new WaitForSeconds(Delay);
-
             FindFreeResources();
-            ShowScanningResultInDebug();                        // ----
+            //ShowScanningResultInDebug();                        // ----
 
             if (_freeResources.Count > 0 && _poolOfIdleCollectorBots.Count > 0)
                 DistributeCollectionTasks();
@@ -130,7 +138,6 @@ public class MainBase : MonoBehaviour
             collectorBot.transform.position = transform.position;
             collectorBot.gameObject.SetActive(true);
             collectorBot.SetBaseAffiliation(this);
-            //Debug.Log(_gatheringPoint.position);                //-------------
             collectorBot.GoTo(_gatheringPoint.position);
 
             _poolOfWorkingCollectorBots.Add(collectorBot);

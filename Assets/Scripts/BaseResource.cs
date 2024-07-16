@@ -22,6 +22,11 @@ public abstract class BaseResource : MonoBehaviour
         ResourceType = resourceType;
     }
 
+    private void OnEnable()
+    {
+        _collectorBot = null;
+    }
+
     private void OnDisable()
     {
         StopAllCoroutines();
@@ -30,12 +35,12 @@ public abstract class BaseResource : MonoBehaviour
     protected abstract CollectedResource GetCollectedResource();
 
     // метод вызываемый ботом сборщиком, получает ссылку на бота, стартует корутину на сбор ресурса
-    public bool TryStartHarvest(CollectorBot collectorBot)
+    public bool TryStartCollecting(CollectorBot collectorBot)
     {
         if (_collectorBot == null)
         {
             _collectorBot = collectorBot;
-            StartCoroutine(Harvesting(5f));         // Магическое число, брать у бота
+            StartCoroutine(Collecting(5f));         // Магическое число, брать у бота
             return true;
         }
 
@@ -43,7 +48,7 @@ public abstract class BaseResource : MonoBehaviour
     }
 
     // корутина на сбор ресурса
-    private IEnumerator Harvesting(float harvestDuration)
+    private IEnumerator Collecting(float harvestDuration)
     {
         float duration = 0;     // Можно обойтись без нее в теории
         _progressBar.gameObject.SetActive(true);
