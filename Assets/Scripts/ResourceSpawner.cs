@@ -19,10 +19,6 @@ public class ResourceSpawner : MonoBehaviour
     private ResourceTimber _prefabTimber;
     private ResourceMarble _prefabMarble;
 
-    //private CollectedResource _prefabCollectedFood;
-    //private CollectedResource _prefabCollectedTimber;
-    //private CollectedResource _prefabCollectedMarble;
-
     private ObjectPool<BaseResource> _poolFood;
     private ObjectPool<BaseResource> _poolTimber;
     private ObjectPool<BaseResource> _poolMarble;
@@ -33,14 +29,9 @@ public class ResourceSpawner : MonoBehaviour
         _prefabTimber = Resources.Load<ResourceTimber>("Prefabs/Timber");
         _prefabMarble = Resources.Load<ResourceMarble>("Prefabs/Marble");
 
-        //_prefabCollectedFood = Resources.Load<CollectedResource>("Prefabs/CollectedFood");
-        //_prefabCollectedTimber = Resources.Load<CollectedResource>("Prefabs/CollectedTimber");
-        //_prefabCollectedMarble = Resources.Load<CollectedResource>("Prefabs/CollectedMarble");
-
         _poolFood = new ObjectPool<BaseResource>(_prefabFood, Create, Enable, Disable);
         _poolTimber = new ObjectPool<BaseResource>(_prefabTimber, Create, Enable, Disable);
         _poolMarble = new ObjectPool<BaseResource>(_prefabMarble, Create, Enable, Disable);
-
 
         _maxFoodOnMap = 3;
         _maxMarbleOnMap = 3;
@@ -49,7 +40,6 @@ public class ResourceSpawner : MonoBehaviour
 
         _mapX = _map.localScale.x * 4;      // Магическое число
         _mapZ = _map.localScale.z * 4;      // Магическое число
-        //Debug.Log(_map.localScale);
 
         StartCoroutine(InitialResourceSpawn());
     }
@@ -120,8 +110,6 @@ public class ResourceSpawner : MonoBehaviour
             float posX = Random.Range(-_mapX, _mapX);
             float posZ = Random.Range(-_mapZ, _mapZ);
             Vector3 spawnPos = new Vector3(posX, 0f, posZ);
-
-            // Заспавнить ресурс
             var resource = pool.Get();
             resource.transform.position = spawnPos;
             resource.gameObject.SetActive(true);
@@ -130,7 +118,6 @@ public class ResourceSpawner : MonoBehaviour
 
     private IEnumerator InitialResourceSpawn()
     {
-        // Повторять пока не будет достигнут максимум ресурсов
         yield return StartCoroutine(SpawnResource(_poolFood, _maxFoodOnMap));
         yield return StartCoroutine(SpawnResource(_poolTimber, _maxTimberOnMap));
         yield return StartCoroutine(SpawnResource(_poolMarble, _maxMarbleOnMap));

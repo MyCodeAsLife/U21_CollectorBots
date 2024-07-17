@@ -5,22 +5,14 @@ using UnityEngine.UI;
 
 public abstract class BaseResource : MonoBehaviour
 {
-    // ссылка на статус бар сбора
-    [SerializeField] private Slider _progressBar;
-
-    private CollectorBot _collectorBot;
-
     protected CollectedResource _prefabCollectedResource;
 
-    // Евент на сбор ресурса, подписать спавнер
+    [SerializeField] private Slider _collectingProgressBar;
+    private CollectorBot _collectorBot;
+
     public event Action<BaseResource> Harvest;
 
     public ResourceType ResourceType { get; private set; }
-
-    public BaseResource(ResourceType resourceType)
-    {
-        ResourceType = resourceType;
-    }
 
     private void OnEnable()
     {
@@ -32,9 +24,11 @@ public abstract class BaseResource : MonoBehaviour
         StopAllCoroutines();
     }
 
-    protected abstract CollectedResource GetCollectedResource();
+    public BaseResource(ResourceType resourceType)
+    {
+        ResourceType = resourceType;
+    }
 
-    // метод вызываемый ботом сборщиком, получает ссылку на бота, стартует корутину на сбор ресурса
     public bool TryStartCollecting(CollectorBot collectorBot)
     {
         if (_collectorBot == null)
@@ -47,22 +41,22 @@ public abstract class BaseResource : MonoBehaviour
         return false;
     }
 
-    // корутина на сбор ресурса
+    protected abstract CollectedResource GetCollectedResource();
+
     private IEnumerator Collecting(float harvestDuration)
     {
         float duration = 0;     // Можно обойтись без нее в теории
-        _progressBar.gameObject.SetActive(true);
+        _collectingProgressBar.gameObject.SetActive(true);
 
         while (duration < harvestDuration)
         {
             yield return new WaitForEndOfFrame();
 
             duration += Time.deltaTime;
-            _progressBar.value = duration / harvestDuration;
+            _collectingProgressBar.value = duration / harvestDuration;
         }
-        // по окончанию возвращает результат боту сборщику и вызывает евент на сбор ресурса
-        // нужна болванка которую будет тащить сборщик, а этот объект необходимо вернуть в пулл
-        _progressBar.gameObject.SetActive(false);
+
+        _collectingProgressBar.gameObject.SetActive(false);
         Harvest?.Invoke(this);
         _collectorBot.SetCollectedResource(GetCollectedResource());
     }

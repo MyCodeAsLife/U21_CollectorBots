@@ -12,8 +12,7 @@ public class CollectorBot : MonoBehaviour
     private Vector3 _targetPoint;
     private bool _isWork;
     private Coroutine _moving;
-
-    public MainBase Base { get; private set; }                  // Переделать в обычное приватное поле
+    private MainBase _base;
 
     public event Action<CollectorBot> TaskCompleted;
 
@@ -45,19 +44,19 @@ public class CollectorBot : MonoBehaviour
     {
         _collectedResource = Instantiate<CollectedResource>(resource, _resourceAttachmentPoint.transform.position, Quaternion.identity, transform);
         _collectedResource.gameObject.SetActive(true);
-        GoTo(Base.transform.position);
+        GoTo(_base.transform.position);
     }
 
     public void SetBaseAffiliation(MainBase mainBase)
     {
-        Base = mainBase;
+        _base = mainBase;
     }
 
     private void OnTriggerEnter(Collider other)
     {
         float distanceToTarget = GetDistanceToTarget();
 
-        if (_resource != null && /*distanceToTarget < 4 &&*/ other.TryGetComponent<BaseResource>(out var resource))   // Магическое число
+        if (_resource != null && other.TryGetComponent<BaseResource>(out var resource))
         {
             if (resource == _resource)            // Сравнивать ресурс
             {
@@ -69,12 +68,12 @@ public class CollectorBot : MonoBehaviour
                 }
             }
         }
-        else if (/*distanceToTarget < 4 &&*/ other.TryGetComponent<MainBase>(out var mainBase) && _collectedResource != null)   // Магическое число
+        else if (other.TryGetComponent<MainBase>(out var mainBase) && _collectedResource != null)
         {
-            if (mainBase == Base)
+            if (mainBase == _base)
             {
                 StopCoroutine(_moving);
-                Base.SetResource(_collectedResource.Type);
+                _base.SetResource(_collectedResource.Type);
                 Destroy(_collectedResource.gameObject);
                 _collectedResource = null;
                 TaskCompleted?.Invoke(this);

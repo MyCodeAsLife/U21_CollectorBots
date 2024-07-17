@@ -13,9 +13,6 @@ public class ObjectPool<T>
     private List<T> _active = new();
 
     public int ActiveResourcesCount => _active.Count;
-    //public Action<int> ChangedActiveObjectsCount;
-
-    //public int TotalSpawnedObjects { get; private set; }
 
     public ObjectPool(T environments, Func<T, T> createObject, Action<T> enableObject, Action<T> disableObject)
     {
@@ -32,9 +29,6 @@ public class ObjectPool<T>
         T obj = _pool.Count < 1 ? CreateObject(_environments) : _pool.Dequeue();
         EnableObject(obj);
         _active.Add(obj);
-        //ChangedActiveObjectsCount?.Invoke(_active.Count);
-        //TotalSpawnedObjects++;
-
         return obj;
     }
 
@@ -43,7 +37,6 @@ public class ObjectPool<T>
         DisableObject(obj);
         _active.Remove(obj);
         _pool.Enqueue(obj);
-        //ChangedActiveObjectsCount?.Invoke(_active.Count);
     }
 
     public void ReturnAll()

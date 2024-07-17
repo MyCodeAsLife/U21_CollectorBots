@@ -7,30 +7,28 @@ public class MainBase : MonoBehaviour
 {
     [SerializeField] private Transform _map;
     [SerializeField] private Transform _gatheringPoint;             // Точка сбора спавнящихся юнитов
+    [SerializeField] private CollectorBotSpawner _botSpawner;
 
-    private CollectorBot _prefabCollectorBot;                       // Выделить в отдельный спавнер, который будет работать со всеми базами     +++
-    private ObjectPool<CollectorBot> _poolCollectorBots;            // Выделить в отдельный спавнер, который будет работать со всеми базами     +++
     //private Explosion _prefabExplosion;                           // Взять из проекта U20, передовать ссылку на этот эффект в мобов
     private float _scanningRadius;
     private int _maxCountCollectorBots;
+    private int _food;
+    private int _timber;
+    private int _marble;
 
     private IList<BaseResource> _freeResources;
     private IList<BaseResource> _resourcesPlannedForCollection;
     private IList<CollectorBot> _poolOfWorkingCollectorBots;
     private IList<CollectorBot> _poolOfIdleCollectorBots;
 
-    //public event Action<CollectorBot> TaskCompleted;
-
     private void Start()    //++
     {
         _maxCountCollectorBots = 3;
-        _prefabCollectorBot = Resources.Load<CollectorBot>("Prefabs/CollectorBot");
         //_prefabExplosion = Resources.Load<Explosion>("Prefabs/Explosion");      // Взять из проекта U20
         _freeResources = new List<BaseResource>();
         _resourcesPlannedForCollection = new List<BaseResource>();
         _scanningRadius = _map.localScale.x > _map.localScale.z ? _map.localScale.x : _map.localScale.z;
         _scanningRadius *= 5;   // Магическое число (кол-во unit/2 в одном "кубе" карты. Сделать константой.
-        _poolCollectorBots = new ObjectPool<CollectorBot>(_prefabCollectorBot, Create, Enable, Disable);
         _poolOfWorkingCollectorBots = new List<CollectorBot>();
         _poolOfIdleCollectorBots = new List<CollectorBot>();
 
@@ -43,7 +41,7 @@ public class MainBase : MonoBehaviour
         StopAllCoroutines();
     }
 
-    public void SetResource(ResourceType resourceType)              // +++++++++++++++++++++++++++++++++++
+    public void SetResource(ResourceType resourceType)
     {
         for (int i = 0; i < _resourcesPlannedForCollection.Count; ++i)
             if (_resourcesPlannedForCollection[i].ResourceType == resourceType)
@@ -51,20 +49,21 @@ public class MainBase : MonoBehaviour
                 _resourcesPlannedForCollection.RemoveAt(i);
                 break;
             }
-    }
 
-    private CollectorBot Create(CollectorBot prefab)        // Доработать спавн ресурсов (Общий базовый класс?)
-    {
-        var obj = Instantiate<CollectorBot>(prefab);
-        obj.transform.SetParent(transform);
+        switch (resourceType)
+        {
+            case ResourceType.Food:
+                _food++;
+                break;
 
-        return obj;
-    }
+            case ResourceType.Timber:
+                _timber++;
+                break;
 
-    private void Enable(CollectorBot bot)
-    {
-        bot.gameObject.SetActive(true);
-        bot.TaskCompleted += OnCollectorBotTaskCompleted;
+            case ResourceType.Marble:
+                _marble++;
+                break;
+        }
     }
 
     public void OnCollectorBotTaskCompleted(CollectorBot bot)
@@ -73,24 +72,15 @@ public class MainBase : MonoBehaviour
         _poolOfIdleCollectorBots.Add(bot);
     }
 
-    private void Disable(CollectorBot bot)
-    {
-        bot.TaskCompleted -= OnCollectorBotTaskCompleted;
-        bot.gameObject.SetActive(false);
-    }
-
     private void FindFreeResources()         // Переименовать(потому как ничего не возвращает) или переместить в корутину ResourceScanning
     {
         Collider[] hits = Physics.OverlapSphere(Vector3.zero, _scanningRadius);
-        //List<BaseResource> allResources = new List<BaseResource>();
 
         foreach (Collider hit in hits)
             if (hit.TryGetComponent(out BaseResource resource))
                 if (_freeResources.Contains(resource) == false)                             // Проблема при сравнении ресурса           ++++++++
                     if (_resourcesPlannedForCollection.Contains(resource) == false)         // Проблема при сравнении ресурса           ++++++++
                         _freeResources.Add(resource);
-
-        //Debug.Log("Free resources - " + _freeResources.Count + ". Planed recources - " + _resourcesPlannedForCollection.Count);     //--------------
     }
 
     private IEnumerator ResourceScanning()          // Работать постоянно или когда закончатся ресурсы?
@@ -126,6 +116,16 @@ public class MainBase : MonoBehaviour
         }
     }
 
+    private void CreateCollectorBot()
+    {
+        var collectorBot = _botSpawner.GetCollectorBot();
+        collectorBot.TaskCompleted += OnCollectorBotTaskCompleted;
+        collectorBot.transform.position = transform.position;
+        collectorBot.SetBaseAffiliation(this);
+        collectorBot.GoTo(_gatheringPoint.position);
+        _poolOfWorkingCollectorBots.Add(collectorBot);
+    }
+
     private IEnumerator StartInitialization()      // 2 пула ботов (занятые и свободные).
     {
         var delay = new WaitForSeconds(1f);
@@ -133,14 +133,7 @@ public class MainBase : MonoBehaviour
         for (int i = 0; i < _maxCountCollectorBots; i++)
         {
             yield return delay;
-
-            var collectorBot = _poolCollectorBots.Get();
-            collectorBot.transform.position = transform.position;
-            collectorBot.gameObject.SetActive(true);
-            collectorBot.SetBaseAffiliation(this);
-            collectorBot.GoTo(_gatheringPoint.position);
-
-            _poolOfWorkingCollectorBots.Add(collectorBot);
+            CreateCollectorBot();
         }
     }
 
