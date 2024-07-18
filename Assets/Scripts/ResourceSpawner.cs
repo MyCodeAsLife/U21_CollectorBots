@@ -15,7 +15,7 @@ public class ResourceSpawner : MonoBehaviour
     private float _mapZ;
     private float _spawnDelay;
 
-    private ResourceFood _prefabFood;               // Упростить ресурсы до одного базового, а их тип определять по полю внутри класса?
+    private ResourceFood _prefabFood;
     private ResourceTimber _prefabTimber;
     private ResourceMarble _prefabMarble;
 
@@ -53,7 +53,7 @@ public class ResourceSpawner : MonoBehaviour
         StopAllCoroutines();
     }
 
-    private BaseResource Create(BaseResource prefab)        // Доработать спавн ресурсов (Общий базовый класс?)
+    private BaseResource Create(BaseResource prefab)
     {
         var obj = Instantiate<BaseResource>(prefab);
         obj.transform.SetParent(transform);
@@ -101,7 +101,7 @@ public class ResourceSpawner : MonoBehaviour
 
     }
 
-    private IEnumerator SpawnResource(ObjectPool<BaseResource> pool, int numberOfResource)     // Подписатся на событие ресурса, когда его подбирают чтобы запустить данную корутину
+    private IEnumerator SpawnResource(ObjectPool<BaseResource> pool, int numberOfResource)
     {
         for (int i = 0; i < numberOfResource; i++)
         {
@@ -121,6 +121,6 @@ public class ResourceSpawner : MonoBehaviour
         yield return StartCoroutine(SpawnResource(_poolFood, _maxFoodOnMap));
         yield return StartCoroutine(SpawnResource(_poolTimber, _maxTimberOnMap));
         yield return StartCoroutine(SpawnResource(_poolMarble, _maxMarbleOnMap));
-        _spawnDelay = 3f;
+        _spawnDelay = 3f;                                                                   // Похоже на магическое число
     }
 }

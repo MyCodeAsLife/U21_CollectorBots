@@ -1,44 +1,65 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class MainBase : MonoBehaviour
 {
     [SerializeField] private Transform _map;
-    [SerializeField] private Transform _gatheringPoint;             // Точка сбора спавнящихся юнитов
+    [SerializeField] private Transform _gatheringPoint;
     [SerializeField] private CollectorBotSpawner _botSpawner;
+    [SerializeField] private TMP_Text _displayNumberOfFood;
+    [SerializeField] private TMP_Text _displayNumberOfTimber;
+    [SerializeField] private TMP_Text _displayNumberOfMarble;
 
-    //private Explosion _prefabExplosion;                           // Взять из проекта U20, передовать ссылку на этот эффект в мобов
-    private float _scanningRadius;
+    private Vector3 _scanningArea;
     private int _maxCountCollectorBots;
-    private int _food;
-    private int _timber;
-    private int _marble;
+    private SingleReactiveProperty<int> _numberOfFood;
+    private SingleReactiveProperty<int> _numberOfTimber;
+    private SingleReactiveProperty<int> _numberOfMarble;
 
     private IList<BaseResource> _freeResources;
     private IList<BaseResource> _resourcesPlannedForCollection;
     private IList<CollectorBot> _poolOfWorkingCollectorBots;
     private IList<CollectorBot> _poolOfIdleCollectorBots;
 
-    private void Start()    //++
+    private void Awake()
     {
-        _maxCountCollectorBots = 3;
-        //_prefabExplosion = Resources.Load<Explosion>("Prefabs/Explosion");      // Взять из проекта U20
-        _freeResources = new List<BaseResource>();
-        _resourcesPlannedForCollection = new List<BaseResource>();
-        _scanningRadius = _map.localScale.x > _map.localScale.z ? _map.localScale.x : _map.localScale.z;
-        _scanningRadius *= 5;   // Магическое число (кол-во unit/2 в одном "кубе" карты. Сделать константой.
-        _poolOfWorkingCollectorBots = new List<CollectorBot>();
-        _poolOfIdleCollectorBots = new List<CollectorBot>();
+        _numberOfFood = new SingleReactiveProperty<int>();
+        _numberOfTimber = new SingleReactiveProperty<int>();
+        _numberOfMarble = new SingleReactiveProperty<int>();
+    }
 
-        StartCoroutine(ResourceScanning());
-        StartCoroutine(StartInitialization());
+    private void OnEnable()
+    {
+        _numberOfFood.Change += DisplayNumberOfFood;
+        _numberOfTimber.Change += DisplayNumberOfTimber;
+        _numberOfMarble.Change += DisplayNumberOfMarble;
     }
 
     private void OnDisable()
     {
         StopAllCoroutines();
+        _numberOfFood.Change -= DisplayNumberOfFood;
+        _numberOfTimber.Change -= DisplayNumberOfTimber;
+        _numberOfMarble.Change -= DisplayNumberOfMarble;
+    }
+
+    private void Start()
+    {
+        const float planeScale = 10;
+        _maxCountCollectorBots = 3;
+        _freeResources = new List<BaseResource>();
+        _resourcesPlannedForCollection = new List<BaseResource>();
+        _scanningArea = new Vector3(_map.localScale.x * planeScale, _map.localScale.y * planeScale, _map.localScale.z * planeScale);
+        _poolOfWorkingCollectorBots = new List<CollectorBot>();
+        _poolOfIdleCollectorBots = new List<CollectorBot>();
+
+        StartCoroutine(ResourceScanning());
+        StartCoroutine(StartInitialization());
+        DisplayNumberOfFood(0);
+        DisplayNumberOfTimber(0);
+        DisplayNumberOfMarble(0);
     }
 
     public void SetResource(ResourceType resourceType)
@@ -53,15 +74,15 @@ public class MainBase : MonoBehaviour
         switch (resourceType)
         {
             case ResourceType.Food:
-                _food++;
+                _numberOfFood.Value++;
                 break;
 
             case ResourceType.Timber:
-                _timber++;
+                _numberOfTimber.Value++;
                 break;
 
             case ResourceType.Marble:
-                _marble++;
+                _numberOfMarble.Value++;
                 break;
         }
     }
@@ -72,34 +93,37 @@ public class MainBase : MonoBehaviour
         _poolOfIdleCollectorBots.Add(bot);
     }
 
-    private void FindFreeResources()         // Переименовать(потому как ничего не возвращает) или переместить в корутину ResourceScanning
+    private void DisplayNumberOfFood(int number) => _displayNumberOfFood.text = "Food: " + number.ToString();
+    private void DisplayNumberOfTimber(int number) => _displayNumberOfTimber.text = "Timber: " + number.ToString();
+    private void DisplayNumberOfMarble(int number) => _displayNumberOfMarble.text = "Marble: " + number.ToString();
+
+    private void FindFreeResources()
     {
-        Collider[] hits = Physics.OverlapSphere(Vector3.zero, _scanningRadius);
+        Collider[] hits = Physics.OverlapBox(Vector3.zero, _scanningArea);
 
         foreach (Collider hit in hits)
             if (hit.TryGetComponent(out BaseResource resource))
-                if (_freeResources.Contains(resource) == false)                             // Проблема при сравнении ресурса           ++++++++
-                    if (_resourcesPlannedForCollection.Contains(resource) == false)         // Проблема при сравнении ресурса           ++++++++
+                if (_freeResources.Contains(resource) == false)
+                    if (_resourcesPlannedForCollection.Contains(resource) == false)
                         _freeResources.Add(resource);
     }
 
-    private IEnumerator ResourceScanning()          // Работать постоянно или когда закончатся ресурсы?
+    private IEnumerator ResourceScanning()
     {
-        float Delay = 2.0f;     // const?
+        const float Delay = 2.0f;
         bool isWork = true;
 
         while (isWork)
         {
             yield return new WaitForSeconds(Delay);
             FindFreeResources();
-            //ShowScanningResultInDebug();                        // ----
 
             if (_freeResources.Count > 0 && _poolOfIdleCollectorBots.Count > 0)
                 DistributeCollectionTasks();
         }
     }
 
-    private void DistributeCollectionTasks()                // Распределение заданий на сбор ресурсов
+    private void DistributeCollectionTasks()
     {
         bool isWork = true;
 
@@ -126,7 +150,7 @@ public class MainBase : MonoBehaviour
         _poolOfWorkingCollectorBots.Add(collectorBot);
     }
 
-    private IEnumerator StartInitialization()      // 2 пула ботов (занятые и свободные).
+    private IEnumerator StartInitialization()
     {
         var delay = new WaitForSeconds(1f);
 
@@ -135,35 +159,5 @@ public class MainBase : MonoBehaviour
             yield return delay;
             CreateCollectorBot();
         }
-    }
-
-    private void ShowScanningResultInDebug()        // ---- Для тестирования
-    {
-        int foodCount = 0;
-        int timberCount = 0;
-        int marbleCount = 0;
-
-        for (int i = 0; i < _freeResources.Count; i++)
-        {
-            switch (_freeResources[i].ResourceType)
-            {
-                case ResourceType.Food:
-                    foodCount++;
-                    break;
-
-                case ResourceType.Timber:
-                    timberCount++;
-                    break;
-
-                case ResourceType.Marble:
-                    marbleCount++;
-                    break;
-
-                default:
-                    throw new Exception("Incorrect resource type");
-            }
-        }
-
-        Debug.Log("Food = " + foodCount + ". Timber = " + timberCount + ". Marble = " + marbleCount);
     }
 }
