@@ -25,6 +25,11 @@ public class ResourceSpawner : MonoBehaviour
 
     private void Start()
     {
+        const float OffsetFromTheEdgeOfTheMap = 1;
+        const float Half = 0.5f;
+        const float PlaneScale = 10;
+        const float Area = PlaneScale * Half - OffsetFromTheEdgeOfTheMap;
+
         _prefabFood = Resources.Load<ResourceFood>("Prefabs/Food");
         _prefabTimber = Resources.Load<ResourceTimber>("Prefabs/Timber");
         _prefabMarble = Resources.Load<ResourceMarble>("Prefabs/Marble");
@@ -36,10 +41,10 @@ public class ResourceSpawner : MonoBehaviour
         _maxFoodOnMap = 3;
         _maxMarbleOnMap = 3;
         _maxTimberOnMap = 5;
-        _spawnDelay = 0f;
+        _spawnDelay = 3f;
 
-        _mapX = _map.localScale.x * 4;      // Магическое число
-        _mapZ = _map.localScale.z * 4;      // Магическое число
+        _mapX = _map.localScale.x * Area;
+        _mapZ = _map.localScale.z * Area;
 
         StartCoroutine(InitialResourceSpawn());
     }
@@ -118,9 +123,11 @@ public class ResourceSpawner : MonoBehaviour
 
     private IEnumerator InitialResourceSpawn()
     {
+        float temp = _spawnDelay;
+        _spawnDelay = 0;
         yield return StartCoroutine(SpawnResource(_poolFood, _maxFoodOnMap));
         yield return StartCoroutine(SpawnResource(_poolTimber, _maxTimberOnMap));
         yield return StartCoroutine(SpawnResource(_poolMarble, _maxMarbleOnMap));
-        _spawnDelay = 3f;                                                                   // Похоже на магическое число
+        _spawnDelay = temp;
     }
 }

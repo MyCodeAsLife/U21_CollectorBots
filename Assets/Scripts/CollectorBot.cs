@@ -4,27 +4,28 @@ using UnityEngine;
 
 public class CollectorBot : MonoBehaviour
 {
-    [SerializeField] private Transform _resourceAttachmentPoint;    // Место "крепления" на сборщике, собранного ресурса
-    [SerializeField] private BaseResource _resource;                // Задается базой, при отправке на сбор
+    [SerializeField] private Transform _resourceAttachmentPoint;
+    [SerializeField] private BaseResource _resource;
     [SerializeField] private float _speed;
 
-    private CollectedResource _collectedResource;                   // Собранный ресурс, его визуально отображение
+    private CollectedResource _collectedResource;
     private Vector3 _targetPoint;
-    private bool _isWork;
     private Coroutine _moving;
     private MainBase _base;
+    private bool _isWork;
 
     public event Action<CollectorBot> TaskCompleted;
+
+    public float DurationOfCollecting { get; private set; }
 
     private void Start()
     {
         _speed = 7f;
         _resource = null;
+        DurationOfCollecting = 5f;
     }
 
-    private float GetDistanceToTarget() => Vector3.Distance(transform.position, _targetPoint);
-
-    public void GoTo(Vector3 point)        // SetMovementPoint
+    public void GoTo(Vector3 point)
     {
         if (_isWork)
             _resource = null;
@@ -35,6 +36,9 @@ public class CollectorBot : MonoBehaviour
 
     public void SetCollectionTask(BaseResource resource)
     {
+        if (_collectedResource != null)
+            StoreResource();
+
         _resource = resource;
         _targetPoint = resource.transform.position;
         _moving = StartCoroutine(Moving());
@@ -52,19 +56,21 @@ public class CollectorBot : MonoBehaviour
         _base = mainBase;
     }
 
+    private float GetDistanceToTarget() => Vector3.Distance(transform.position, _targetPoint);
+
     private void OnTriggerEnter(Collider other)
     {
         float distanceToTarget = GetDistanceToTarget();
 
         if (_resource != null && other.TryGetComponent<BaseResource>(out var resource))
         {
-            if (resource == _resource)            // Сравнивать ресурс
+            if (resource == _resource)
             {
                 if (_moving != null)
                 {
                     StopCoroutine(_moving);
                     _moving = null;
-                    resource.TryStartCollecting(this);         // Вставить словие, на проверку возможности сбора ресурса
+                    resource.TryStartCollecting(this);
                 }
             }
         }
@@ -73,12 +79,18 @@ public class CollectorBot : MonoBehaviour
             if (mainBase == _base)
             {
                 StopCoroutine(_moving);
-                _base.SetResource(_collectedResource.Type);
-                Destroy(_collectedResource.gameObject);
-                _collectedResource = null;
+                _moving = null;
+                StoreResource();
                 TaskCompleted?.Invoke(this);
             }
         }
+    }
+
+    private void StoreResource()
+    {
+        _base.StoreResource(_collectedResource.Type);
+        Destroy(_collectedResource.gameObject);
+        _collectedResource = null;
     }
 
     private IEnumerator Moving()
@@ -90,7 +102,7 @@ public class CollectorBot : MonoBehaviour
         {
             yield return null;
             transform.LookAt(_targetPoint);
-            transform.position = Vector3.MoveTowards(transform.position, _targetPoint, _speed * Time.deltaTime);        // Хороший вариант
+            transform.position = Vector3.MoveTowards(transform.position, _targetPoint, _speed * Time.deltaTime);
 
             if (GetDistanceToTarget() < 0.1f)
                 _isWork = false;

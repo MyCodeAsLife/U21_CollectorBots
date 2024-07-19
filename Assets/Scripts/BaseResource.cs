@@ -5,12 +5,18 @@ using UnityEngine.UI;
 
 public abstract class BaseResource : MonoBehaviour
 {
-    protected CollectedResource _prefabCollectedResource;
+    public event Action<BaseResource> Harvest;
+
+    protected CollectedResource PrefabCollectedResource;
 
     [SerializeField] private Slider _collectingProgressBar;
+
     private CollectorBot _collectorBot;
 
-    public event Action<BaseResource> Harvest;
+    public BaseResource(ResourceType resourceType)
+    {
+        ResourceType = resourceType;
+    }
 
     public ResourceType ResourceType { get; private set; }
 
@@ -24,17 +30,12 @@ public abstract class BaseResource : MonoBehaviour
         StopAllCoroutines();
     }
 
-    public BaseResource(ResourceType resourceType)
-    {
-        ResourceType = resourceType;
-    }
-
     public bool TryStartCollecting(CollectorBot collectorBot)
     {
         if (_collectorBot == null)
         {
             _collectorBot = collectorBot;
-            StartCoroutine(Collecting(5f));         // Магическое число, брать у бота
+            StartCoroutine(Collecting(_collectorBot.DurationOfCollecting));
             return true;
         }
 
@@ -43,17 +44,17 @@ public abstract class BaseResource : MonoBehaviour
 
     protected abstract CollectedResource GetCollectedResource();
 
-    private IEnumerator Collecting(float harvestDuration)
+    private IEnumerator Collecting(float durationOfCollecting)
     {
-        float duration = 0;     // Можно обойтись без нее в теории
+        float timer = 0;
         _collectingProgressBar.gameObject.SetActive(true);
 
-        while (duration < harvestDuration)
+        while (timer < durationOfCollecting)
         {
             yield return new WaitForEndOfFrame();
 
-            duration += Time.deltaTime;
-            _collectingProgressBar.value = duration / harvestDuration;
+            timer += Time.deltaTime;
+            _collectingProgressBar.value = timer / durationOfCollecting;
         }
 
         _collectingProgressBar.gameObject.SetActive(false);

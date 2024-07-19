@@ -7,10 +7,10 @@ public class MainBase : MonoBehaviour
 {
     [SerializeField] private Transform _map;
     [SerializeField] private Transform _gatheringPoint;
-    [SerializeField] private CollectorBotSpawner _botSpawner;
     [SerializeField] private TMP_Text _displayNumberOfFood;
     [SerializeField] private TMP_Text _displayNumberOfTimber;
     [SerializeField] private TMP_Text _displayNumberOfMarble;
+    [SerializeField] private CollectorBotSpawner _botSpawner;
 
     private Vector3 _scanningArea;
     private int _maxCountCollectorBots;
@@ -47,11 +47,11 @@ public class MainBase : MonoBehaviour
 
     private void Start()
     {
-        const float planeScale = 10;
+        const float PlaneScale = 10;
         _maxCountCollectorBots = 3;
         _freeResources = new List<BaseResource>();
         _resourcesPlannedForCollection = new List<BaseResource>();
-        _scanningArea = new Vector3(_map.localScale.x * planeScale, _map.localScale.y * planeScale, _map.localScale.z * planeScale);
+        _scanningArea = new Vector3(_map.localScale.x * PlaneScale, _map.localScale.y * PlaneScale, _map.localScale.z * PlaneScale);
         _poolOfWorkingCollectorBots = new List<CollectorBot>();
         _poolOfIdleCollectorBots = new List<CollectorBot>();
 
@@ -62,7 +62,7 @@ public class MainBase : MonoBehaviour
         DisplayNumberOfMarble(0);
     }
 
-    public void SetResource(ResourceType resourceType)
+    public void StoreResource(ResourceType resourceType)
     {
         for (int i = 0; i < _resourcesPlannedForCollection.Count; ++i)
             if (_resourcesPlannedForCollection[i].ResourceType == resourceType)
@@ -87,15 +87,15 @@ public class MainBase : MonoBehaviour
         }
     }
 
-    public void OnCollectorBotTaskCompleted(CollectorBot bot)
+    private void DisplayNumberOfFood(int number) => _displayNumberOfFood.text = "Food: " + number.ToString();
+    private void DisplayNumberOfTimber(int number) => _displayNumberOfTimber.text = "Timber: " + number.ToString();
+    private void DisplayNumberOfMarble(int number) => _displayNumberOfMarble.text = "Marble: " + number.ToString();
+
+    private void OnCollectorBotTaskCompleted(CollectorBot bot)
     {
         _poolOfWorkingCollectorBots.Remove(bot);
         _poolOfIdleCollectorBots.Add(bot);
     }
-
-    private void DisplayNumberOfFood(int number) => _displayNumberOfFood.text = "Food: " + number.ToString();
-    private void DisplayNumberOfTimber(int number) => _displayNumberOfTimber.text = "Timber: " + number.ToString();
-    private void DisplayNumberOfMarble(int number) => _displayNumberOfMarble.text = "Marble: " + number.ToString();
 
     private void FindFreeResources()
     {
