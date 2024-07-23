@@ -3,21 +3,26 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CollectorBot : MonoBehaviour
+public class CollectorBotModel : MonoBehaviour          // Удалить монобех и оставить здесь только данные и их обработку
 {
     [SerializeField] private Transform _resourceAttachmentPoint;
     [SerializeField] private BaseResource _resource;
     [SerializeField] private Slider _progressBar;
     [SerializeField] private float _speed;
 
+    private SingleReactiveProperty<float> _collectionProgress;
     private Vector3 _targetPoint;
     private Coroutine _moving;
-    private MainBase _base;
+    private MainBaseModel _base;
     private float _durationOfCollecting;
     private bool _haveCollectedResource;
     private bool _isWork;
 
-    public event Action<CollectorBot> TaskCompleted;
+    public event Action<CollectorBotModel> TaskCompleted;
+    public event Action CollectingStarted;
+    public event Action CollectingFinished;
+    // Евент для включения прогресбара, нужен view модуль отвечающий за визуал прогресбара
+    // Корутина сбора ресурса должна менять значение, а на изменение значения(реактивное свойство) подписать прогресбар
 
     private void OnDisable()
     {
@@ -48,7 +53,7 @@ public class CollectorBot : MonoBehaviour
         _moving = StartCoroutine(Moving());
     }
 
-    public void SetBaseAffiliation(MainBase mainBase)
+    public void SetBaseAffiliation(MainBaseModel mainBase)
     {
         _base = mainBase;
     }
@@ -67,7 +72,7 @@ public class CollectorBot : MonoBehaviour
                 }
             }
         }
-        else if (other.TryGetComponent<MainBase>(out var mainBase) && _haveCollectedResource)
+        else if (other.TryGetComponent<MainBaseModel>(out var mainBase) && _haveCollectedResource)
         {
             if (mainBase == _base)
             {
