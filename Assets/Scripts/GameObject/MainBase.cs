@@ -10,10 +10,12 @@ public class MainBase : MonoBehaviour
     [SerializeField] private TMP_Text _displayNumberOfFood;
     [SerializeField] private TMP_Text _displayNumberOfTimber;
     [SerializeField] private TMP_Text _displayNumberOfMarble;
-    [SerializeField] private CollectorBotSpawner _botSpawner;
 
     private Vector3 _scanningArea;
     private int _maxCountCollectorBots;
+    private CollectorBot _prefabCollectorBot;
+    private Coroutine _resourceScaning;
+
     private SingleReactiveProperty<int> _numberOfFood;
     private SingleReactiveProperty<int> _numberOfTimber;
     private SingleReactiveProperty<int> _numberOfMarble;
@@ -39,7 +41,9 @@ public class MainBase : MonoBehaviour
 
     private void OnDisable()
     {
-        StopAllCoroutines();
+        if (_resourceScaning != null)
+            StopCoroutine(_resourceScaning);
+
         _numberOfFood.Change -= DisplayNumberOfFood;
         _numberOfTimber.Change -= DisplayNumberOfTimber;
         _numberOfMarble.Change -= DisplayNumberOfMarble;
@@ -47,6 +51,7 @@ public class MainBase : MonoBehaviour
 
     private void Start()
     {
+        _prefabCollectorBot = Resources.Load<CollectorBot>("Prefabs/CollectorBot");
         const float PlaneScale = 10;
         _maxCountCollectorBots = 3;
         _freeResources = new List<BaseResource>();
@@ -55,7 +60,7 @@ public class MainBase : MonoBehaviour
         _poolOfWorkingCollectorBots = new List<CollectorBot>();
         _poolOfIdleCollectorBots = new List<CollectorBot>();
 
-        StartCoroutine(ResourceScanning());
+        _resourceScaning = StartCoroutine(ResourceScanning());
         StartCoroutine(StartInitialization());
         DisplayNumberOfFood(0);
         DisplayNumberOfTimber(0);
@@ -121,6 +126,8 @@ public class MainBase : MonoBehaviour
             if (_freeResources.Count > 0 && _poolOfIdleCollectorBots.Count > 0)
                 DistributeCollectionTasks();
         }
+
+        _resourceScaning = null;
     }
 
     private void DistributeCollectionTasks()
@@ -142,9 +149,10 @@ public class MainBase : MonoBehaviour
 
     private void CreateCollectorBot()
     {
-        var collectorBot = _botSpawner.GetCollectorBot();
+        var collectorBot = Instantiate<CollectorBot>(_prefabCollectorBot);
         collectorBot.TaskCompleted += OnCollectorBotTaskCompleted;
         collectorBot.transform.position = transform.position;
+        collectorBot.transform.SetParent(transform);
         collectorBot.SetBaseAffiliation(this);
         collectorBot.GoTo(_gatheringPoint.position);
         _poolOfWorkingCollectorBots.Add(collectorBot);

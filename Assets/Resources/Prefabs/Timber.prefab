@@ -298,7 +298,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1687241076757153488}
   - component: {fileID: 1324194535899880177}
-  - component: {fileID: 1010251379056917180}
+  - component: {fileID: 3133319000693289109}
   m_Layer: 0
   m_Name: Timber
   m_TagString: Resource
@@ -347,7 +347,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.5, y: 1.5, z: 1.5}
   m_Center: {x: 0, y: 0.75, z: 0}
---- !u!114 &1010251379056917180
+--- !u!114 &3133319000693289109
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -356,10 +356,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 5856011920624504664}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 70eaa6d666b8a2b4aa411427901a335c, type: 3}
+  m_Script: {fileID: 11500000, guid: ba928095222557643b0160ef34ed22a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _collectingProgressBar: {fileID: 5122309955138065798}
+  _resourceType: 1
 --- !u!1 &6466268602969296924
 GameObject:
   m_ObjectHideFlags: 0

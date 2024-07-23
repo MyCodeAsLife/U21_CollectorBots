@@ -1,42 +1,46 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CollectorBot : MonoBehaviour
 {
     [SerializeField] private Transform _resourceAttachmentPoint;
     [SerializeField] private BaseResource _resource;
+    [SerializeField] private Slider _progressBar;
     [SerializeField] private float _speed;
 
-    private CollectedResource _collectedResource;
     private Vector3 _targetPoint;
     private Coroutine _moving;
     private MainBase _base;
+    private float _durationOfCollecting;
+    private bool _haveCollectedResource;
     private bool _isWork;
 
     public event Action<CollectorBot> TaskCompleted;
 
-    public float DurationOfCollecting { get; private set; }
+    private void OnDisable()
+    {
+        if (_moving != null)
+            StopCoroutine(_moving);
+    }
 
     private void Start()
     {
         _speed = 7f;
         _resource = null;
-        DurationOfCollecting = 5f;
+        _durationOfCollecting = 5f;
     }
 
     public void GoTo(Vector3 point)
     {
-        if (_isWork)
-            _resource = null;
-
         _targetPoint = point;
         _moving = StartCoroutine(Moving());
     }
 
     public void SetCollectionTask(BaseResource resource)
     {
-        if (_collectedResource != null)
+        if (_haveCollectedResource)
             StoreResource();
 
         _resource = resource;
@@ -44,24 +48,13 @@ public class CollectorBot : MonoBehaviour
         _moving = StartCoroutine(Moving());
     }
 
-    public void SetCollectedResource(CollectedResource resource)
-    {
-        _collectedResource = Instantiate<CollectedResource>(resource, _resourceAttachmentPoint.transform.position, Quaternion.identity, transform);
-        _collectedResource.gameObject.SetActive(true);
-        GoTo(_base.transform.position);
-    }
-
     public void SetBaseAffiliation(MainBase mainBase)
     {
         _base = mainBase;
     }
 
-    private float GetDistanceToTarget() => Vector3.Distance(transform.position, _targetPoint);
-
     private void OnTriggerEnter(Collider other)
     {
-        float distanceToTarget = GetDistanceToTarget();
-
         if (_resource != null && other.TryGetComponent<BaseResource>(out var resource))
         {
             if (resource == _resource)
@@ -70,11 +63,11 @@ public class CollectorBot : MonoBehaviour
                 {
                     StopCoroutine(_moving);
                     _moving = null;
-                    resource.TryStartCollecting(this);
+                    StartCoroutine(Collecting());
                 }
             }
         }
-        else if (other.TryGetComponent<MainBase>(out var mainBase) && _collectedResource != null)
+        else if (other.TryGetComponent<MainBase>(out var mainBase) && _haveCollectedResource)
         {
             if (mainBase == _base)
             {
@@ -88,9 +81,9 @@ public class CollectorBot : MonoBehaviour
 
     private void StoreResource()
     {
-        _base.StoreResource(_collectedResource.Type);
-        Destroy(_collectedResource.gameObject);
-        _collectedResource = null;
+        _haveCollectedResource = false;
+        _base.StoreResource(_resource.ResourceType);
+        _resource.Delete();
     }
 
     private IEnumerator Moving()
@@ -104,10 +97,30 @@ public class CollectorBot : MonoBehaviour
             transform.LookAt(_targetPoint);
             transform.position = Vector3.MoveTowards(transform.position, _targetPoint, _speed * Time.deltaTime);
 
-            if (GetDistanceToTarget() < 0.1f)
+            if (Vector3.Distance(transform.position, _targetPoint) < 0.1f)
                 _isWork = false;
         }
 
         TaskCompleted?.Invoke(this);
+    }
+
+    private IEnumerator Collecting()
+    {
+        float timer = 0;
+        _progressBar.gameObject.SetActive(true);
+
+        while (timer < _durationOfCollecting)
+        {
+            yield return new WaitForEndOfFrame();
+
+            timer += Time.deltaTime;
+            _progressBar.value = timer / _durationOfCollecting;
+        }
+
+        _progressBar.gameObject.SetActive(false);
+        _haveCollectedResource = true;
+        _resource.transform.SetParent(this.transform);
+        _resource.transform.position = _resourceAttachmentPoint.transform.position;
+        GoTo(_base.transform.position);
     }
 }

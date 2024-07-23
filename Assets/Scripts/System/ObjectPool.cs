@@ -12,8 +12,6 @@ public class ObjectPool<T>
     private Queue<T> _pool = new();
     private List<T> _active = new();
 
-    public int ActiveResourcesCount => _active.Count;
-
     public ObjectPool(T environments, Func<T, T> createObject, Action<T> enableObject, Action<T> disableObject)
     {
         _environments = environments;
@@ -23,6 +21,8 @@ public class ObjectPool<T>
 
         Return(CreateObject(_environments));
     }
+
+    public int ActiveResourcesCount => _active.Count;
 
     public T Get()
     {

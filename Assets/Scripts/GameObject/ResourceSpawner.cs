@@ -15,9 +15,9 @@ public class ResourceSpawner : MonoBehaviour
     private float _mapZ;
     private float _spawnDelay;
 
-    private ResourceFood _prefabFood;
-    private ResourceTimber _prefabTimber;
-    private ResourceMarble _prefabMarble;
+    private BaseResource _prefabFood;
+    private BaseResource _prefabTimber;
+    private BaseResource _prefabMarble;
 
     private ObjectPool<BaseResource> _poolFood;
     private ObjectPool<BaseResource> _poolTimber;
@@ -30,9 +30,9 @@ public class ResourceSpawner : MonoBehaviour
         const float PlaneScale = 10;
         const float Area = PlaneScale * Half - OffsetFromTheEdgeOfTheMap;
 
-        _prefabFood = Resources.Load<ResourceFood>("Prefabs/Food");
-        _prefabTimber = Resources.Load<ResourceTimber>("Prefabs/Timber");
-        _prefabMarble = Resources.Load<ResourceMarble>("Prefabs/Marble");
+        _prefabFood = Resources.Load<BaseResource>("Prefabs/Food");
+        _prefabTimber = Resources.Load<BaseResource>("Prefabs/Timber");
+        _prefabMarble = Resources.Load<BaseResource>("Prefabs/Marble");
 
         _poolFood = new ObjectPool<BaseResource>(_prefabFood, Create, Enable, Disable);
         _poolTimber = new ObjectPool<BaseResource>(_prefabTimber, Create, Enable, Disable);
@@ -70,6 +70,8 @@ public class ResourceSpawner : MonoBehaviour
     {
         obj.gameObject.SetActive(true);
         obj.Harvest += OnResourceHarvest;
+        obj.transform.rotation = Quaternion.identity;
+        obj.transform.position = Vector3.zero;
     }
 
     private void Disable(BaseResource obj)
@@ -80,6 +82,8 @@ public class ResourceSpawner : MonoBehaviour
 
     private void OnResourceHarvest(BaseResource resource)
     {
+        resource.transform.SetParent(transform);
+
         switch (resource.ResourceType)
         {
             case ResourceType.Food:

@@ -4,6 +4,8 @@ public class SingleReactiveProperty<T>
 {
     private T _value;
 
+    public event Action<T> Change;
+
     public T Value
     {
         get
@@ -16,6 +18,4 @@ public class SingleReactiveProperty<T>
             Change?.Invoke(Value);
         }
     }
-
-    public event Action<T> Change;
 }

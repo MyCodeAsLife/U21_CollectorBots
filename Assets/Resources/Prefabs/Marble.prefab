@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 814148269025248432}
   - component: {fileID: 3556941032057114740}
-  - component: {fileID: 6869505434021395329}
+  - component: {fileID: 6490525338553447486}
   m_Layer: 0
   m_Name: Marble
   m_TagString: Resource
@@ -58,7 +58,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0.02, y: 0.25, z: 0.03}
---- !u!114 &6869505434021395329
+--- !u!114 &6490525338553447486
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -67,10 +67,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1852453681069754434}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 879c9e63558dc114194aac1920d8296f, type: 3}
+  m_Script: {fileID: 11500000, guid: ba928095222557643b0160ef34ed22a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _collectingProgressBar: {fileID: 8265437822380050948}
+  _resourceType: 2
 --- !u!1 &3362127255541636221
 GameObject:
   m_ObjectHideFlags: 0
