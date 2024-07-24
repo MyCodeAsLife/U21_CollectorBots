@@ -1,69 +1,49 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
-public class MainBaseModel : MonoBehaviour
+public class MainBase : MonoBehaviour
 {
     [SerializeField] private Transform _map;
     [SerializeField] private Transform _gatheringPoint;
-    [SerializeField] private TMP_Text _displayNumberOfFood;
-    [SerializeField] private TMP_Text _displayNumberOfTimber;
-    [SerializeField] private TMP_Text _displayNumberOfMarble;
 
-    private CollectorBotModel _prefabCollectorBot;
-    private ResourceScaner _resourceScaner;
     private Coroutine _resourceScaning;
-    private int _maxCountCollectorBots;
+    private ResourceScaner _resourceScaner;
+    private CollectorBotPresenter _prefabCollectorBot;
 
-    private SingleReactiveProperty<int> _numberOfFood;
-    private SingleReactiveProperty<int> _numberOfTimber;
-    private SingleReactiveProperty<int> _numberOfMarble;
+    private int _numberOfFood;
+    private int _numberOfTimber;
+    private int _numberOfMarble;
+    private int _maxCountCollectorBots;
 
     private IList<BaseResource> _freeResources;
     private IList<BaseResource> _resourcesPlannedForCollection;
-    private IList<CollectorBotModel> _poolOfWorkingCollectorBots;
-    private IList<CollectorBotModel> _poolOfIdleCollectorBots;
+    private IList<CollectorBotPresenter> _poolOfWorkingCollectorBots;
+    private IList<CollectorBotPresenter> _poolOfIdleCollectorBots;
 
-    private void Awake()
-    {
-        _numberOfFood = new SingleReactiveProperty<int>();
-        _numberOfTimber = new SingleReactiveProperty<int>();
-        _numberOfMarble = new SingleReactiveProperty<int>();
-    }
-
-    private void OnEnable()
-    {
-        _numberOfFood.Change += DisplayNumberOfFood;
-        _numberOfTimber.Change += DisplayNumberOfTimber;
-        _numberOfMarble.Change += DisplayNumberOfMarble;
-    }
+    public event Action<int> FoodQuantityChanged;
+    public event Action<int> TimberQuantityChanged;
+    public event Action<int> MarbleQuantityChanged;
 
     private void OnDisable()
     {
         if (_resourceScaning != null)
             StopCoroutine(_resourceScaning);
-
-        _numberOfFood.Change -= DisplayNumberOfFood;
-        _numberOfTimber.Change -= DisplayNumberOfTimber;
-        _numberOfMarble.Change -= DisplayNumberOfMarble;
     }
 
     private void Start()
     {
         _resourceScaner = new ResourceScaner(_map);
-        _prefabCollectorBot = Resources.Load<CollectorBotModel>("Prefabs/CollectorBot");
+        _prefabCollectorBot = Resources.Load<CollectorBotPresenter>("Prefabs/CollectorBot");
         _maxCountCollectorBots = 3;
         _freeResources = new List<BaseResource>();
         _resourcesPlannedForCollection = new List<BaseResource>();
-        _poolOfWorkingCollectorBots = new List<CollectorBotModel>();
-        _poolOfIdleCollectorBots = new List<CollectorBotModel>();
+        _poolOfWorkingCollectorBots = new List<CollectorBotPresenter>();
+        _poolOfIdleCollectorBots = new List<CollectorBotPresenter>();
 
         _resourceScaning = StartCoroutine(ResourceScanning());
         StartCoroutine(StartInitialization());
-        DisplayNumberOfFood(0);
-        DisplayNumberOfTimber(0);
-        DisplayNumberOfMarble(0);
     }
 
     public void StoreResource(ResourceType resourceType)
@@ -78,24 +58,23 @@ public class MainBaseModel : MonoBehaviour
         switch (resourceType)
         {
             case ResourceType.Food:
-                _numberOfFood.Value++;
+                _numberOfFood++;
+                FoodQuantityChanged?.Invoke(_numberOfFood);
                 break;
 
             case ResourceType.Timber:
-                _numberOfTimber.Value++;
+                _numberOfTimber++;
+                TimberQuantityChanged?.Invoke(_numberOfTimber);
                 break;
 
             case ResourceType.Marble:
-                _numberOfMarble.Value++;
+                _numberOfMarble++;
+                MarbleQuantityChanged?.Invoke(_numberOfMarble);
                 break;
         }
     }
 
-    private void DisplayNumberOfFood(int number) => _displayNumberOfFood.text = "Food: " + number.ToString();
-    private void DisplayNumberOfTimber(int number) => _displayNumberOfTimber.text = "Timber: " + number.ToString();
-    private void DisplayNumberOfMarble(int number) => _displayNumberOfMarble.text = "Marble: " + number.ToString();
-
-    private void OnCollectorBotTaskCompleted(CollectorBotModel bot)
+    private void OnCollectorBotTaskCompleted(CollectorBotPresenter bot)
     {
         _poolOfWorkingCollectorBots.Remove(bot);
         _poolOfIdleCollectorBots.Add(bot);
@@ -130,7 +109,7 @@ public class MainBaseModel : MonoBehaviour
 
     private void CreateCollectorBot()
     {
-        var collectorBot = Instantiate<CollectorBotModel>(_prefabCollectorBot);
+        var collectorBot = Instantiate<CollectorBotPresenter>(_prefabCollectorBot);
         collectorBot.TaskCompleted += OnCollectorBotTaskCompleted;
         collectorBot.transform.position = transform.position;
         collectorBot.transform.SetParent(transform);
