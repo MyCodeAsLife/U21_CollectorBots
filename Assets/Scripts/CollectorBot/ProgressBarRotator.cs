@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ProgressBarRotator : MonoBehaviour
 {
-    private void LateUpdate()           // Добавить на прогрессбар
+    private void LateUpdate()
     {
         transform.rotation = Quaternion.LookRotation(transform.position - Camera.main.transform.position);
     }

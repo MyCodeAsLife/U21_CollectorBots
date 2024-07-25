@@ -152,7 +152,8 @@ GameObject:
   - component: {fileID: 1802297041328947698}
   - component: {fileID: 4552590444961841795}
   - component: {fileID: 8052783343120502989}
-  m_Layer: 0
+  - component: {fileID: 5094284141572270936}
+  m_Layer: 3
   m_Name: CollectorBot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -290,4 +291,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed61e221df4daed4590ecac6fe0af1ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _presenter: {fileID: 0}
+--- !u!114 &5094284141572270936
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8820824959152771189}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a96a329bf585f84bb075526323c55ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

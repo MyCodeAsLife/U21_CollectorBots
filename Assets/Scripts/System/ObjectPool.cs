@@ -26,7 +26,7 @@ public class ObjectPool<T>
 
     public T Get()
     {
-        T obj = _pool.Count < 1 ? CreateObject(_environments) : _pool.Dequeue();
+        T obj = _pool.Count > 0 ? _pool.Dequeue() : CreateObject(_environments);
         EnableObject(obj);
         _active.Add(obj);
         return obj;

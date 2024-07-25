@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class ResourceSpawner : MonoBehaviour
+public class ResourceSpawner : MonoBehaviour            // —оздать универсальный шаблон спавнера
 {
     [SerializeField] private Transform _map;
 
@@ -15,13 +15,13 @@ public class ResourceSpawner : MonoBehaviour
     private float _mapZ;
     private float _spawnDelay;
 
-    private BaseResource _prefabFood;
-    private BaseResource _prefabTimber;
-    private BaseResource _prefabMarble;
+    private Resource _prefabFood;
+    private Resource _prefabTimber;
+    private Resource _prefabMarble;
 
-    private ObjectPool<BaseResource> _poolFood;
-    private ObjectPool<BaseResource> _poolTimber;
-    private ObjectPool<BaseResource> _poolMarble;
+    private ObjectPool<Resource> _poolFood;
+    private ObjectPool<Resource> _poolTimber;
+    private ObjectPool<Resource> _poolMarble;
 
     private void Start()
     {
@@ -30,13 +30,13 @@ public class ResourceSpawner : MonoBehaviour
         const float PlaneScale = 10;
         const float Area = PlaneScale * Half - OffsetFromTheEdgeOfTheMap;
 
-        _prefabFood = Resources.Load<BaseResource>("Prefabs/Food");
-        _prefabTimber = Resources.Load<BaseResource>("Prefabs/Timber");
-        _prefabMarble = Resources.Load<BaseResource>("Prefabs/Marble");
+        _prefabFood = Resources.Load<Resource>("Prefabs/Food");
+        _prefabTimber = Resources.Load<Resource>("Prefabs/Timber");
+        _prefabMarble = Resources.Load<Resource>("Prefabs/Marble");
 
-        _poolFood = new ObjectPool<BaseResource>(_prefabFood, Create, Enable, Disable);
-        _poolTimber = new ObjectPool<BaseResource>(_prefabTimber, Create, Enable, Disable);
-        _poolMarble = new ObjectPool<BaseResource>(_prefabMarble, Create, Enable, Disable);
+        _poolFood = new ObjectPool<Resource>(_prefabFood, Create, Enable, Disable);
+        _poolTimber = new ObjectPool<Resource>(_prefabTimber, Create, Enable, Disable);
+        _poolMarble = new ObjectPool<Resource>(_prefabMarble, Create, Enable, Disable);
 
         _maxFoodOnMap = 3;
         _maxMarbleOnMap = 3;
@@ -55,18 +55,18 @@ public class ResourceSpawner : MonoBehaviour
         _poolTimber.ReturnAll();
         _poolMarble.ReturnAll();
 
-        StopAllCoroutines();
+        StopAllCoroutines();                                            // ¬ыпилить
     }
 
-    private BaseResource Create(BaseResource prefab)
+    private Resource Create(Resource prefab)
     {
-        var obj = Instantiate<BaseResource>(prefab);
+        var obj = Instantiate<Resource>(prefab);
         obj.transform.SetParent(transform);
 
         return obj;
     }
 
-    private void Enable(BaseResource obj)
+    private void Enable(Resource obj)
     {
         obj.gameObject.SetActive(true);
         obj.Harvest += OnResourceHarvest;
@@ -74,13 +74,13 @@ public class ResourceSpawner : MonoBehaviour
         obj.transform.position = Vector3.zero;
     }
 
-    private void Disable(BaseResource obj)
+    private void Disable(Resource obj)
     {
         obj.Harvest -= OnResourceHarvest;
         obj.gameObject.SetActive(false);
     }
 
-    private void OnResourceHarvest(BaseResource resource)
+    private void OnResourceHarvest(Resource resource)           // –азбить на спавнеры дл€ каждого ресурса и через мастер спавнер циклом выбирать какой спавнер вызвать.
     {
         resource.transform.SetParent(transform);
 
@@ -107,14 +107,15 @@ public class ResourceSpawner : MonoBehaviour
             default:
                 throw new Exception("Unknown resource");
         }
-
     }
 
-    private IEnumerator SpawnResource(ObjectPool<BaseResource> pool, int numberOfResource)
+    private IEnumerator SpawnResource(ObjectPool<Resource> pool, int numberOfResource)
     {
+        var delay = new WaitForSeconds(_spawnDelay);
+
         for (int i = 0; i < numberOfResource; i++)
         {
-            yield return new WaitForSeconds(_spawnDelay);
+            yield return delay;
 
             float posX = Random.Range(-_mapX, _mapX);
             float posZ = Random.Range(-_mapZ, _mapZ);

@@ -229,6 +229,7 @@ GameObject:
   - component: {fileID: 1051263210545206000}
   - component: {fileID: 53826791399561118}
   - component: {fileID: 7258718634908244617}
+  - component: {fileID: 2657533273853748148}
   m_Layer: 0
   m_Name: ProgressBar
   m_TagString: Untagged
@@ -320,6 +321,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed61e221df4daed4590ecac6fe0af1ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &2657533273853748148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8520949204947976845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a96a329bf585f84bb075526323c55ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8848884333683255875
 GameObject:
   m_ObjectHideFlags: 0
@@ -331,7 +344,7 @@ GameObject:
   - component: {fileID: 2069672524921426945}
   - component: {fileID: 4027242354790297752}
   - component: {fileID: 6479298084311990008}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Food
   m_TagString: Resource
   m_Icon: {fileID: 0}

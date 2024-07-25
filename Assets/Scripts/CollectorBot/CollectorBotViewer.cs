@@ -1,16 +1,16 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(CollectorBotPresenter))]
+[RequireComponent(typeof(CollectorBotAI))]
 public class CollectorBotViewer : MonoBehaviour
 {
     private Slider _progressBar;
     private Slider _prefabProgressBar;
-    private CollectorBotPresenter _presenter;
+    private CollectorBotAI _presenter;
 
     private void Awake()
     {
-        _presenter = GetComponent<CollectorBotPresenter>();
+        _presenter = GetComponent<CollectorBotAI>();
         _prefabProgressBar = Resources.Load<Slider>("Prefabs/ProgressBar");
         _progressBar = Instantiate<Slider>(_prefabProgressBar, transform);
     }

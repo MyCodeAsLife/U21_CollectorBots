@@ -1,11 +1,11 @@
 using System;
 using UnityEngine;
 
-public class BaseResource : MonoBehaviour
+public class Resource : MonoBehaviour
 {
     [SerializeField] private ResourceType _resourceType;
 
-    public event Action<BaseResource> Harvest;
+    public event Action<Resource> Harvest;
 
     public ResourceType ResourceType => _resourceType;
 

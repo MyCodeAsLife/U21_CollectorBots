@@ -3,24 +3,24 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MainBase : MonoBehaviour
+public class MainBaseAI : MonoBehaviour
 {
     [SerializeField] private Transform _map;
     [SerializeField] private Transform _gatheringPoint;
 
     private Coroutine _resourceScaning;
     private ResourceScaner _resourceScaner;
-    private CollectorBotPresenter _prefabCollectorBot;
+    private CollectorBotAI _prefabCollectorBot;
 
     private int _numberOfFood;
     private int _numberOfTimber;
     private int _numberOfMarble;
     private int _maxCountCollectorBots;
 
-    private IList<BaseResource> _freeResources;
-    private IList<BaseResource> _resourcesPlannedForCollection;
-    private IList<CollectorBotPresenter> _poolOfWorkingCollectorBots;
-    private IList<CollectorBotPresenter> _poolOfIdleCollectorBots;
+    private IList<Resource> _freeResources;
+    private IList<Resource> _resourcesPlannedForCollection;
+    private IList<CollectorBotAI> _poolOfWorkingCollectorBots;
+    private IList<CollectorBotAI> _poolOfIdleCollectorBots;
 
     public event Action<int> FoodQuantityChanged;
     public event Action<int> TimberQuantityChanged;
@@ -35,12 +35,12 @@ public class MainBase : MonoBehaviour
     private void Start()
     {
         _resourceScaner = new ResourceScaner(_map);
-        _prefabCollectorBot = Resources.Load<CollectorBotPresenter>("Prefabs/CollectorBot");
+        _prefabCollectorBot = Resources.Load<CollectorBotAI>("Prefabs/CollectorBot");
         _maxCountCollectorBots = 3;
-        _freeResources = new List<BaseResource>();
-        _resourcesPlannedForCollection = new List<BaseResource>();
-        _poolOfWorkingCollectorBots = new List<CollectorBotPresenter>();
-        _poolOfIdleCollectorBots = new List<CollectorBotPresenter>();
+        _freeResources = new List<Resource>();
+        _resourcesPlannedForCollection = new List<Resource>();
+        _poolOfWorkingCollectorBots = new List<CollectorBotAI>();
+        _poolOfIdleCollectorBots = new List<CollectorBotAI>();
 
         _resourceScaning = StartCoroutine(ResourceScanning());
         StartCoroutine(StartInitialization());
@@ -74,7 +74,7 @@ public class MainBase : MonoBehaviour
         }
     }
 
-    private void OnCollectorBotTaskCompleted(CollectorBotPresenter bot)
+    private void OnCollectorBotTaskCompleted(CollectorBotAI bot)
     {
         _poolOfWorkingCollectorBots.Remove(bot);
         _poolOfIdleCollectorBots.Add(bot);
@@ -82,7 +82,7 @@ public class MainBase : MonoBehaviour
 
     private void FindFreeResources()
     {
-        IList<BaseResource> allResources = _resourceScaner.MapScaning();
+        IList<Resource> allResources = _resourceScaner.MapScaning();
 
         foreach (var resource in allResources)
             if (_freeResources.Contains(resource) == false)
@@ -109,7 +109,7 @@ public class MainBase : MonoBehaviour
 
     private void CreateCollectorBot()
     {
-        var collectorBot = Instantiate<CollectorBotPresenter>(_prefabCollectorBot);
+        var collectorBot = Instantiate<CollectorBotAI>(_prefabCollectorBot);
         collectorBot.TaskCompleted += OnCollectorBotTaskCompleted;
         collectorBot.transform.position = transform.position;
         collectorBot.transform.SetParent(transform);

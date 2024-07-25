@@ -1,18 +1,18 @@
 using TMPro;
 using UnityEngine;
 
-[RequireComponent(typeof(MainBase))]
-public class MainBaseViewer : MonoBehaviour
+[RequireComponent(typeof(MainBaseAI))]
+public class DisplayResourceUI : MonoBehaviour
 {
     [SerializeField] private TMP_Text _displayNumberOfFood;
     [SerializeField] private TMP_Text _displayNumberOfTimber;
     [SerializeField] private TMP_Text _displayNumberOfMarble;
 
-    private MainBase _model;
+    private MainBaseAI _model;
 
     private void OnEnable()
     {
-        _model = GetComponent<MainBase>();
+        _model = GetComponent<MainBaseAI>();
         _model.FoodQuantityChanged += OnChangeNumberOfFood;
         _model.TimberQuantityChanged += OnChangeNumberOfTimber;
         _model.MarbleQuantityChanged += OnChangeNumberOfMarble;
