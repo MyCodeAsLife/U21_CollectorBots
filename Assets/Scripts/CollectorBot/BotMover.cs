@@ -15,8 +15,7 @@ public class BotMover : MonoBehaviour
 
     private void OnDisable()
     {
-        if (_moving != null)
-            StopCoroutine(_moving);
+        Stop();
     }
 
     private void Start()
@@ -32,8 +31,11 @@ public class BotMover : MonoBehaviour
 
     public void Stop()
     {
-        StopCoroutine(_moving);
-        _moving = null;
+        if (IsMoving)
+        {
+            StopCoroutine(_moving);
+            _moving = null;
+        }
     }
 
     private IEnumerator Moving()

@@ -16,7 +16,7 @@ public class ResourceScaner
     public IList<Resource> MapScaning()
     {
         IList<Resource> list = new List<Resource>();
-        Collider[] hits = Physics.OverlapBox(Vector3.zero, _scanningArea,Quaternion.identity, _resourceMask);       // создать int.max и вычесть из него маску _resourceMask  a ^ b https://informatics.msk.ru/mod/book/view.php?id=578&chapterid=306
+        Collider[] hits = Physics.OverlapBox(Vector3.zero, _scanningArea, Quaternion.identity, int.MaxValue ^ _resourceMask);
 
         foreach (Collider hit in hits)
             if (hit.gameObject.layer == _resourceMask)
