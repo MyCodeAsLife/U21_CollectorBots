@@ -1,81 +1,112 @@
-using System;
+using System.Collections;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
-public class ResourceSpawner
+public class ResourceSpawner : MonoBehaviour
 {
-    //[SerializeField] private Transform _map;                // ќставить в главном спавнере, и оттуда передавать координаты дл€ спавна ресурса, сюда в метод спавна
+    [SerializeField] private Transform _map;
+    private ResourceSpawnerBase _foodSpawner;
+    private ResourceSpawnerBase _timberSpawner;
+    private ResourceSpawnerBase _marbleSpawner;
 
-    private readonly Transform Parent;
-    private readonly Resource PrefabResource;
-    private readonly Func<Resource, Resource> CreateResource;         // ¬озвращаемое значение будет readoly?
+    private int _maxFoodOnMap;
+    private int _maxTimberOnMap;
+    private int _maxMarbleOnMap;
 
-    private ObjectPool<Resource> _pool;
-    //private int _maxRecourcesOnMap;                         // –егулировать кол-во будет главный спавнер
+    private float _mapX;
+    private float _mapZ;
+    private float _spawnDelay;
 
-    //private float _mapX;                                    // ¬ыбирать координаты спавна будет главный спавнер
-    //private float _mapZ;                                    // ¬ыбирать координаты спавна будет главный спавнер
-    //private float _spawnDelay;                              // –егулировать интервал будет главный спавнер
-    public Action Collected;                          // Ќужно ли возвращать ресурс???
-
-    public int NumberOfActiveResources => _pool.ActiveResourcesCount;
-
-    public ResourceSpawner(Resource prefabResource, Func<Resource, Resource> createFunc, Transform parent)             // «аменить на start?
+    private void Awake()
     {
-        PrefabResource = prefabResource;
-        CreateResource = createFunc;
-        Parent = parent;
-        _pool = new ObjectPool<Resource>(PrefabResource, Create, Enable, Disable);
-
-        //_maxRecourcesOnMap = 3;
-        //_spawnDelay = 3f;
+        var foodPrefab = Resources.Load<Resource>("Prefabs/Food");
+        _foodSpawner = new ResourceSpawnerBase(foodPrefab, CreateResource, transform);
+        var timberPrefab = Resources.Load<Resource>("Prefabs/Timber");
+        _timberSpawner = new ResourceSpawnerBase(timberPrefab, CreateResource, transform);
+        var marblePrefab = Resources.Load<Resource>("Prefabs/Marble");
+        _marbleSpawner = new ResourceSpawnerBase(marblePrefab, CreateResource, transform);
     }
 
-    ~ResourceSpawner()
+    private void OnEnable()
     {
-        RemoveResourcesFromMap();
+        _foodSpawner.Collected += OnFoodCollecting;
+        _timberSpawner.Collected += OnTimberCollecting;
+        _marbleSpawner.Collected += OnMarbleCollecting;
     }
 
-    public void RemoveResourcesFromMap()
+    private void OnDisable()
     {
-        _pool.ReturnAll();
+        _foodSpawner.Collected -= OnFoodCollecting;
+        _timberSpawner.Collected -= OnTimberCollecting;
+        _marbleSpawner.Collected -= OnMarbleCollecting;
+
+        _foodSpawner.RemoveResourcesFromMap();
+        _timberSpawner.RemoveResourcesFromMap();
+        _marbleSpawner.RemoveResourcesFromMap();
+
+        StopAllCoroutines();
     }
 
-    public void Spawn(Vector3 spawnPosition)
+    private void Start()
     {
-        var resource = _pool.Get();
-        resource.transform.position = spawnPosition;
-        resource.gameObject.SetActive(true);
+        const float OffsetFromTheEdgeOfTheMap = 1;
+        const float Half = 0.5f;
+        const float PlaneScale = 10;
+        const float Area = PlaneScale * Half - OffsetFromTheEdgeOfTheMap;
+
+        _maxFoodOnMap = 3;
+        _maxMarbleOnMap = 3;
+        _maxTimberOnMap = 5;
+        _spawnDelay = 3f;
+
+        _mapX = _map.localScale.x * Area;
+        _mapZ = _map.localScale.z * Area;
+
+        StartCoroutine(InitialResourceSpawn());
     }
 
-    private Resource Create(Resource prefab)
-    {
-        //var obj = Instantiate<Resource>(prefab);
-        var obj = CreateResource(prefab);
-        obj.transform.SetParent(Parent);
+    private Resource CreateResource(Resource prefab) => Instantiate<Resource>(prefab);
 
-        return obj;
+    private void OnFoodCollecting()
+    {
+        int numberOfFood = _maxFoodOnMap - _foodSpawner.NumberOfActiveResources;
+        StartCoroutine(SpawnRes(_foodSpawner, numberOfFood));
     }
 
-    private void Enable(Resource obj)
+    private void OnTimberCollecting()
     {
-        obj.gameObject.SetActive(true);
-        obj.Harvest += OnResourceHarvest;
-        obj.transform.rotation = Quaternion.identity;
-        obj.transform.position = Vector3.zero;
+        int numberOfTimber = _maxTimberOnMap - _timberSpawner.NumberOfActiveResources;
+        StartCoroutine(SpawnRes(_timberSpawner, numberOfTimber));
     }
 
-    private void Disable(Resource obj)
+    private void OnMarbleCollecting()
     {
-        obj.Harvest -= OnResourceHarvest;
-        obj.gameObject.SetActive(false);
+        int numberOfMarble = _maxMarbleOnMap - _marbleSpawner.NumberOfActiveResources;
+        StartCoroutine(SpawnRes(_marbleSpawner, numberOfMarble));
     }
 
-    private void OnResourceHarvest(Resource resource)                                               // ƒописать логику
+    private IEnumerator SpawnRes(ResourceSpawnerBase resourceSpawner, int numberOfResource)
     {
-        resource.transform.SetParent(Parent);
-        _pool.Return(resource);
-        Collected?.Invoke(resource);
-        //int numberOfFood = _maxFoodOnMap - _poolFood.ActiveResourcesCount;                          // јкшин который будет запускатс€ отсюда и на который будет подписан главный спавнер
-        //StartCoroutine(SpawnResource(_poolFood, numberOfFood));                                     // «атем главный спавнер будет смотреть сколько данного ресурса на карте осталось и спанить недостающие
+        var delay = new WaitForSeconds(_spawnDelay);
+
+        for (int i = 0; i < numberOfResource; i++)
+        {
+            yield return delay;
+
+            float posX = Random.Range(-_mapX, _mapX);
+            float posZ = Random.Range(-_mapZ, _mapZ);
+            Vector3 spawnPos = new Vector3(posX, 0f, posZ);
+            resourceSpawner.Spawn(spawnPos);
+        }
+    }
+
+    private IEnumerator InitialResourceSpawn()
+    {
+        float temp = _spawnDelay;
+        _spawnDelay = 0;
+        yield return StartCoroutine(SpawnRes(_foodSpawner, _maxFoodOnMap));
+        yield return StartCoroutine(SpawnRes(_timberSpawner, _maxTimberOnMap));
+        yield return StartCoroutine(SpawnRes(_marbleSpawner, _maxMarbleOnMap));
+        _spawnDelay = temp;
     }
 }

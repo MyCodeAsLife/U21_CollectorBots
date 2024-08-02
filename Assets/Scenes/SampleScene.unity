@@ -1465,6 +1465,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1862855321}
   - component: {fileID: 1862855320}
+  - component: {fileID: 1862855322}
   m_Layer: 0
   m_Name: ResourceSpawner
   m_TagString: Untagged
@@ -1479,7 +1480,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1862855319}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b7e8eedcbc911ea4cbed92436706f613, type: 3}
   m_Name: 
@@ -1500,6 +1501,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1921979344}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1862855322
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862855319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3acb4b68a8d6cac41a74f3e9ff8e781f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _map: {fileID: 390180206}
 --- !u!1 &1888786576
 GameObject:
   m_ObjectHideFlags: 0
